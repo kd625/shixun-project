@@ -721,3 +721,387 @@ create table gen_table_column (
   update_time       datetime                                   comment '更新时间',
   primary key (column_id)
 ) engine=innodb auto_increment=1 comment = '代码生成业务表字段';
+
+
+-- ----------------------------
+-- 21、虚拟仿真实训业务表
+-- ----------------------------
+drop table if exists vt_lab;
+create table vt_lab (
+  lab_id           bigint(20)      not null auto_increment    comment '实验室ID',
+  lab_name         varchar(100)    not null                   comment '实验室名称',
+  college_name     varchar(100)    default ''                 comment '所属院校或院系',
+  location         varchar(200)    default ''                 comment '地点',
+  capacity         int(11)         default 0                  comment '容量',
+  open_status      char(1)         default '0'                comment '开放状态（0开放 1关闭 2维护）',
+  manager_name     varchar(50)     default ''                 comment '负责人',
+  contact_phone    varchar(30)     default ''                 comment '联系方式',
+  introduction     varchar(1000)   default ''                 comment '简介',
+  create_by        varchar(64)     default '',
+  create_time      datetime,
+  update_by        varchar(64)     default '',
+  update_time      datetime,
+  remark           varchar(500)    default '',
+  primary key (lab_id)
+) engine=innodb auto_increment=100 comment='虚拟仿真实验室';
+
+drop table if exists vt_device;
+create table vt_device (
+  device_id        bigint(20)      not null auto_increment    comment '设备ID',
+  device_name      varchar(100)    not null                   comment '设备名称',
+  device_code      varchar(64)     not null                   comment '设备编号',
+  lab_id           bigint(20)      default null               comment '所属实验室ID',
+  device_type      varchar(50)     default ''                 comment '设备类型',
+  run_status       char(1)         default '0'                comment '运行状态（0正常 1维护 2故障）',
+  online_status    char(1)         default '0'                comment '在线状态（0在线 1离线）',
+  last_check_time  datetime                                   comment '最近检测时间',
+  create_by        varchar(64)     default '',
+  create_time      datetime,
+  update_by        varchar(64)     default '',
+  update_time      datetime,
+  remark           varchar(500)    default '',
+  primary key (device_id),
+  unique key uk_vt_device_code (device_code),
+  key idx_vt_device_lab (lab_id)
+) engine=innodb auto_increment=100 comment='虚拟仿真设备';
+
+drop table if exists vt_resource;
+create table vt_resource (
+  resource_id      bigint(20)      not null auto_increment    comment '资源ID',
+  resource_name    varchar(120)    not null                   comment '资源名称',
+  resource_type    char(1)         default '0'                comment '资源类型（0虚拟仿真 1视频 2音频 3文档）',
+  major_name       varchar(100)    default ''                 comment '所属专业',
+  course_name      varchar(100)    default ''                 comment '适用课程',
+  cover_url        varchar(500)    default ''                 comment '封面地址',
+  file_url         varchar(500)    default ''                 comment '附件地址',
+  share_status     char(1)         default '0'                comment '共享状态（0开放 1校内 2停用）',
+  view_count       int(11)         default 0                  comment '浏览量',
+  collect_count    int(11)         default 0                  comment '收藏量',
+  introduction     varchar(1000)   default ''                 comment '简介',
+  create_by        varchar(64)     default '',
+  create_time      datetime,
+  update_by        varchar(64)     default '',
+  update_time      datetime,
+  remark           varchar(500)    default '',
+  primary key (resource_id)
+) engine=innodb auto_increment=100 comment='虚拟仿真实训资源';
+
+drop table if exists vt_share_apply;
+create table vt_share_apply (
+  apply_id         bigint(20)      not null auto_increment    comment '申请ID',
+  applicant_name   varchar(50)     not null                   comment '申请人',
+  phone            varchar(30)     default ''                 comment '手机号',
+  organization     varchar(120)    default ''                 comment '单位',
+  apply_type       char(1)         default '0'                comment '申请类型（0资源 1实验室）',
+  target_id        bigint(20)      default null               comment '关联资源或实验室ID',
+  target_name      varchar(120)    default ''                 comment '关联对象名称',
+  reserve_time     datetime                                   comment '预约时间',
+  user_count       int(11)         default 1                  comment '使用人数',
+  apply_status     char(1)         default '0'                comment '申请状态（0待审核 1通过 2驳回）',
+  audit_opinion    varchar(500)    default ''                 comment '审核意见',
+  create_by        varchar(64)     default '',
+  create_time      datetime,
+  update_by        varchar(64)     default '',
+  update_time      datetime,
+  remark           varchar(500)    default '',
+  primary key (apply_id)
+) engine=innodb auto_increment=100 comment='共享开放申请';
+
+drop table if exists vt_course;
+create table vt_course (
+  course_id        bigint(20)      not null auto_increment    comment '课程ID',
+  course_name      varchar(100)    not null                   comment '课程名称',
+  major_direction  varchar(100)    default ''                 comment '专业方向',
+  class_hours      int(11)         default 0                  comment '课时',
+  teacher_name     varchar(50)     default ''                 comment '授课教师',
+  course_status    char(1)         default '0'                comment '课程状态（0启用 1停用）',
+  introduction     varchar(1000)   default ''                 comment '课程简介',
+  create_by        varchar(64)     default '',
+  create_time      datetime,
+  update_by        varchar(64)     default '',
+  update_time      datetime,
+  remark           varchar(500)    default '',
+  primary key (course_id)
+) engine=innodb auto_increment=100 comment='实训课程';
+
+drop table if exists vt_experiment;
+create table vt_experiment (
+  experiment_id    bigint(20)      not null auto_increment    comment '实验ID',
+  experiment_name  varchar(120)    not null                   comment '实验名称',
+  course_id        bigint(20)      default null               comment '课程ID',
+  resource_id      bigint(20)      default null               comment '资源ID',
+  difficulty       char(1)         default '1'                comment '难度（1初级 2中级 3高级）',
+  duration_minutes int(11)         default 45                 comment '预计时长分钟',
+  open_status      char(1)         default '0'                comment '开放状态（0开放 1关闭）',
+  introduction     varchar(1000)   default ''                 comment '实验简介',
+  create_by        varchar(64)     default '',
+  create_time      datetime,
+  update_by        varchar(64)     default '',
+  update_time      datetime,
+  remark           varchar(500)    default '',
+  primary key (experiment_id),
+  key idx_vt_exp_course (course_id),
+  key idx_vt_exp_resource (resource_id)
+) engine=innodb auto_increment=100 comment='实训实验';
+
+drop table if exists vt_teaching_plan;
+create table vt_teaching_plan (
+  plan_id          bigint(20)      not null auto_increment    comment '计划ID',
+  plan_name        varchar(120)    not null                   comment '计划名称',
+  course_id        bigint(20)      default null               comment '课程ID',
+  experiment_id    bigint(20)      default null               comment '实验ID',
+  class_target     varchar(100)    default ''                 comment '班级或对象',
+  start_time       datetime                                   comment '计划开始时间',
+  end_time         datetime                                   comment '计划结束时间',
+  plan_status      char(1)         default '0'                comment '计划状态（0未开始 1进行中 2已结束）',
+  manager_name     varchar(50)     default ''                 comment '负责人',
+  create_by        varchar(64)     default '',
+  create_time      datetime,
+  update_by        varchar(64)     default '',
+  update_time      datetime,
+  remark           varchar(500)    default '',
+  primary key (plan_id),
+  key idx_vt_plan_course (course_id),
+  key idx_vt_plan_exp (experiment_id)
+) engine=innodb auto_increment=100 comment='教学计划';
+
+drop table if exists vt_training_record;
+create table vt_training_record (
+  record_id        bigint(20)      not null auto_increment    comment '记录ID',
+  plan_id          bigint(20)      default null               comment '计划ID',
+  student_name     varchar(50)     not null                   comment '学员姓名',
+  student_no       varchar(50)     default ''                 comment '学号或编号',
+  start_time       datetime                                   comment '开始时间',
+  end_time         datetime                                   comment '结束时间',
+  complete_status  char(1)         default '0'                comment '完成状态（0未完成 1已完成 2异常）',
+  score            decimal(5,2)    default 0                  comment '得分',
+  duration_minutes int(11)         default 0                  comment '用时分钟',
+  evaluation       varchar(500)    default ''                 comment '评价',
+  create_by        varchar(64)     default '',
+  create_time      datetime,
+  update_by        varchar(64)     default '',
+  update_time      datetime,
+  remark           varchar(500)    default '',
+  primary key (record_id),
+  key idx_vt_record_plan (plan_id)
+) engine=innodb auto_increment=100 comment='实训过程结果';
+
+
+-- ----------------------------
+-- 初始化-虚拟仿真实训字典数据
+-- ----------------------------
+insert into sys_dict_type values(100, '实验室开放状态', 'vt_open_status', '0', 'admin', sysdate(), '', null, '实验室开放状态');
+insert into sys_dict_type values(101, '设备运行状态', 'vt_run_status', '0', 'admin', sysdate(), '', null, '设备运行状态');
+insert into sys_dict_type values(102, '设备在线状态', 'vt_online_status', '0', 'admin', sysdate(), '', null, '设备在线状态');
+insert into sys_dict_type values(103, '资源类型', 'vt_resource_type', '0', 'admin', sysdate(), '', null, '资源类型');
+insert into sys_dict_type values(104, '共享状态', 'vt_share_status', '0', 'admin', sysdate(), '', null, '共享状态');
+insert into sys_dict_type values(105, '申请类型', 'vt_apply_type', '0', 'admin', sysdate(), '', null, '申请类型');
+insert into sys_dict_type values(106, '申请状态', 'vt_apply_status', '0', 'admin', sysdate(), '', null, '申请状态');
+insert into sys_dict_type values(107, '实验难度', 'vt_difficulty', '0', 'admin', sysdate(), '', null, '实验难度');
+insert into sys_dict_type values(108, '课程状态', 'vt_course_status', '0', 'admin', sysdate(), '', null, '课程状态');
+insert into sys_dict_type values(109, '教学计划状态', 'vt_plan_status', '0', 'admin', sysdate(), '', null, '教学计划状态');
+insert into sys_dict_type values(110, '完成状态', 'vt_complete_status', '0', 'admin', sysdate(), '', null, '完成状态');
+
+insert into sys_dict_data values(100, 1, '开放', '0', 'vt_open_status', '', 'success', 'Y', '0', 'admin', sysdate(), '', null, '开放');
+insert into sys_dict_data values(101, 2, '关闭', '1', 'vt_open_status', '', 'danger', 'N', '0', 'admin', sysdate(), '', null, '关闭');
+insert into sys_dict_data values(102, 3, '维护', '2', 'vt_open_status', '', 'warning', 'N', '0', 'admin', sysdate(), '', null, '维护');
+insert into sys_dict_data values(103, 1, '正常', '0', 'vt_run_status', '', 'success', 'Y', '0', 'admin', sysdate(), '', null, '正常');
+insert into sys_dict_data values(104, 2, '维护', '1', 'vt_run_status', '', 'warning', 'N', '0', 'admin', sysdate(), '', null, '维护');
+insert into sys_dict_data values(105, 3, '故障', '2', 'vt_run_status', '', 'danger', 'N', '0', 'admin', sysdate(), '', null, '故障');
+insert into sys_dict_data values(106, 1, '在线', '0', 'vt_online_status', '', 'success', 'Y', '0', 'admin', sysdate(), '', null, '在线');
+insert into sys_dict_data values(107, 2, '离线', '1', 'vt_online_status', '', 'info', 'N', '0', 'admin', sysdate(), '', null, '离线');
+insert into sys_dict_data values(108, 1, '虚拟仿真', '0', 'vt_resource_type', '', 'primary', 'Y', '0', 'admin', sysdate(), '', null, '虚拟仿真');
+insert into sys_dict_data values(109, 2, '视频', '1', 'vt_resource_type', '', 'success', 'N', '0', 'admin', sysdate(), '', null, '视频');
+insert into sys_dict_data values(110, 3, '音频', '2', 'vt_resource_type', '', 'warning', 'N', '0', 'admin', sysdate(), '', null, '音频');
+insert into sys_dict_data values(111, 4, '文档', '3', 'vt_resource_type', '', 'info', 'N', '0', 'admin', sysdate(), '', null, '文档');
+insert into sys_dict_data values(112, 1, '开放', '0', 'vt_share_status', '', 'success', 'Y', '0', 'admin', sysdate(), '', null, '开放');
+insert into sys_dict_data values(113, 2, '校内', '1', 'vt_share_status', '', 'warning', 'N', '0', 'admin', sysdate(), '', null, '校内');
+insert into sys_dict_data values(114, 3, '停用', '2', 'vt_share_status', '', 'danger', 'N', '0', 'admin', sysdate(), '', null, '停用');
+insert into sys_dict_data values(115, 1, '资源', '0', 'vt_apply_type', '', 'primary', 'Y', '0', 'admin', sysdate(), '', null, '资源');
+insert into sys_dict_data values(116, 2, '实验室', '1', 'vt_apply_type', '', 'success', 'N', '0', 'admin', sysdate(), '', null, '实验室');
+insert into sys_dict_data values(117, 1, '待审核', '0', 'vt_apply_status', '', 'warning', 'Y', '0', 'admin', sysdate(), '', null, '待审核');
+insert into sys_dict_data values(118, 2, '通过', '1', 'vt_apply_status', '', 'success', 'N', '0', 'admin', sysdate(), '', null, '通过');
+insert into sys_dict_data values(119, 3, '驳回', '2', 'vt_apply_status', '', 'danger', 'N', '0', 'admin', sysdate(), '', null, '驳回');
+insert into sys_dict_data values(120, 1, '初级', '1', 'vt_difficulty', '', 'success', 'Y', '0', 'admin', sysdate(), '', null, '初级');
+insert into sys_dict_data values(121, 2, '中级', '2', 'vt_difficulty', '', 'warning', 'N', '0', 'admin', sysdate(), '', null, '中级');
+insert into sys_dict_data values(122, 3, '高级', '3', 'vt_difficulty', '', 'danger', 'N', '0', 'admin', sysdate(), '', null, '高级');
+insert into sys_dict_data values(123, 1, '启用', '0', 'vt_course_status', '', 'success', 'Y', '0', 'admin', sysdate(), '', null, '启用');
+insert into sys_dict_data values(124, 2, '停用', '1', 'vt_course_status', '', 'danger', 'N', '0', 'admin', sysdate(), '', null, '停用');
+insert into sys_dict_data values(125, 1, '未开始', '0', 'vt_plan_status', '', 'info', 'Y', '0', 'admin', sysdate(), '', null, '未开始');
+insert into sys_dict_data values(126, 2, '进行中', '1', 'vt_plan_status', '', 'primary', 'N', '0', 'admin', sysdate(), '', null, '进行中');
+insert into sys_dict_data values(127, 3, '已结束', '2', 'vt_plan_status', '', 'success', 'N', '0', 'admin', sysdate(), '', null, '已结束');
+insert into sys_dict_data values(128, 1, '未完成', '0', 'vt_complete_status', '', 'warning', 'Y', '0', 'admin', sysdate(), '', null, '未完成');
+insert into sys_dict_data values(129, 2, '已完成', '1', 'vt_complete_status', '', 'success', 'N', '0', 'admin', sysdate(), '', null, '已完成');
+insert into sys_dict_data values(130, 3, '异常', '2', 'vt_complete_status', '', 'danger', 'N', '0', 'admin', sysdate(), '', null, '异常');
+
+
+-- ----------------------------
+-- 初始化-虚拟仿真实训菜单和权限
+-- ----------------------------
+insert into sys_menu values('2000', '资源管理', '0', '4', 'virtualResource', null, '', '', 1, 0, 'M', '0', '0', '', 'education', 'admin', sysdate(), '', null, '虚拟仿真资源管理目录');
+insert into sys_menu values('2001', '实训管理', '0', '5', 'virtualTraining', null, '', '', 1, 0, 'M', '0', '0', '', 'skill', 'admin', sysdate(), '', null, '虚拟仿真实训管理目录');
+insert into sys_menu values('2002', '数据概览', '0', '6', 'virtualData', null, '', '', 1, 0, 'M', '0', '0', '', 'dashboard', 'admin', sysdate(), '', null, '虚拟仿真数据概览目录');
+insert into sys_menu values('2003', '监控管理', '0', '7', 'virtualMonitor', null, '', '', 1, 0, 'M', '0', '0', '', 'monitor', 'admin', sysdate(), '', null, '虚拟仿真监控目录');
+insert into sys_menu values('2004', '效能管理', '0', '8', 'virtualEffect', null, '', '', 1, 0, 'M', '0', '0', '', 'chart', 'admin', sysdate(), '', null, '虚拟仿真效能目录');
+insert into sys_menu values('2010', '实验室管理', '2000', '1', 'lab', 'virtual/lab/index', '', '', 1, 0, 'C', '0', '0', 'virtual:lab:list', 'education', 'admin', sysdate(), '', null, '实验室管理菜单');
+insert into sys_menu values('2011', '仿真设备', '2000', '2', 'device', 'virtual/device/index', '', '', 1, 0, 'C', '0', '0', 'virtual:device:list', 'server', 'admin', sysdate(), '', null, '仿真设备菜单');
+insert into sys_menu values('2012', '实训资源', '2000', '3', 'resource', 'virtual/resource/index', '', '', 1, 0, 'C', '0', '0', 'virtual:resource:list', 'documentation', 'admin', sysdate(), '', null, '实训资源菜单');
+insert into sys_menu values('2013', '共享申请', '2000', '4', 'shareApply', 'virtual/shareApply/index', '', '', 1, 0, 'C', '0', '0', 'virtual:shareApply:list', 'message', 'admin', sysdate(), '', null, '共享申请菜单');
+insert into sys_menu values('2014', '课程管理', '2001', '1', 'course', 'virtual/course/index', '', '', 1, 0, 'C', '0', '0', 'virtual:course:list', 'guide', 'admin', sysdate(), '', null, '课程管理菜单');
+insert into sys_menu values('2015', '实训实验', '2001', '2', 'experiment', 'virtual/experiment/index', '', '', 1, 0, 'C', '0', '0', 'virtual:experiment:list', 'example', 'admin', sysdate(), '', null, '实训实验菜单');
+insert into sys_menu values('2016', '教学计划', '2001', '3', 'plan', 'virtual/plan/index', '', '', 1, 0, 'C', '0', '0', 'virtual:plan:list', 'date', 'admin', sysdate(), '', null, '教学计划菜单');
+insert into sys_menu values('2017', '过程结果', '2001', '4', 'record', 'virtual/record/index', '', '', 1, 0, 'C', '0', '0', 'virtual:record:list', 'form', 'admin', sysdate(), '', null, '过程结果菜单');
+insert into sys_menu values('2018', '概览统计', '2002', '1', 'dashboard', 'virtual/dashboard/index', '', '', 1, 0, 'C', '0', '0', 'virtual:dashboard:list', 'dashboard', 'admin', sysdate(), '', null, '概览统计菜单');
+insert into sys_menu values('2019', '实训分析', '2002', '2', 'trainingAnalysis', 'virtual/effect/experiment', '', '', 1, 0, 'C', '0', '0', 'virtual:dashboard:list', 'chart', 'admin', sysdate(), '', null, '实训分析菜单');
+insert into sys_menu values('2020', '数据导出', '2002', '3', 'dataExport', 'virtual/effect/share', '', '', 1, 0, 'C', '0', '0', 'virtual:dashboard:list', 'excel', 'admin', sysdate(), '', null, '数据导出菜单');
+insert into sys_menu values('2021', '设备监控', '2003', '1', 'deviceMonitor', 'virtual/monitor/device', '', '', 1, 0, 'C', '0', '0', 'virtual:dashboard:list', 'monitor', 'admin', sysdate(), '', null, '设备监控菜单');
+insert into sys_menu values('2022', '资源监控', '2003', '2', 'resourceMonitor', 'virtual/monitor/resource', '', '', 1, 0, 'C', '0', '0', 'virtual:dashboard:list', 'redis-list', 'admin', sysdate(), '', null, '资源监控菜单');
+insert into sys_menu values('2023', '教学监控', '2003', '3', 'teachingMonitor', 'virtual/monitor/teaching', '', '', 1, 0, 'C', '0', '0', 'virtual:dashboard:list', 'online', 'admin', sysdate(), '', null, '教学监控菜单');
+insert into sys_menu values('2024', '资源利用率', '2004', '1', 'resourceEffect', 'virtual/effect/resource', '', '', 1, 0, 'C', '0', '0', 'virtual:dashboard:list', 'rate', 'admin', sysdate(), '', null, '资源利用率菜单');
+insert into sys_menu values('2025', '实验完成率', '2004', '2', 'experimentEffect', 'virtual/effect/experiment', '', '', 1, 0, 'C', '0', '0', 'virtual:dashboard:list', 'skill', 'admin', sysdate(), '', null, '实验完成率菜单');
+insert into sys_menu values('2026', '开放共享成效', '2004', '3', 'shareEffect', 'virtual/effect/share', '', '', 1, 0, 'C', '0', '0', 'virtual:dashboard:list', 'international', 'admin', sysdate(), '', null, '开放共享成效菜单');
+
+insert into sys_menu values('2100', '实验室查询', '2010', '1', '#', '', '', '', 1, 0, 'F', '0', '0', 'virtual:lab:query', '#', 'admin', sysdate(), '', null, '');
+insert into sys_menu values('2101', '实验室新增', '2010', '2', '#', '', '', '', 1, 0, 'F', '0', '0', 'virtual:lab:add', '#', 'admin', sysdate(), '', null, '');
+insert into sys_menu values('2102', '实验室修改', '2010', '3', '#', '', '', '', 1, 0, 'F', '0', '0', 'virtual:lab:edit', '#', 'admin', sysdate(), '', null, '');
+insert into sys_menu values('2103', '实验室删除', '2010', '4', '#', '', '', '', 1, 0, 'F', '0', '0', 'virtual:lab:remove', '#', 'admin', sysdate(), '', null, '');
+insert into sys_menu values('2104', '实验室导出', '2010', '5', '#', '', '', '', 1, 0, 'F', '0', '0', 'virtual:lab:export', '#', 'admin', sysdate(), '', null, '');
+insert into sys_menu values('2105', '设备查询', '2011', '1', '#', '', '', '', 1, 0, 'F', '0', '0', 'virtual:device:query', '#', 'admin', sysdate(), '', null, '');
+insert into sys_menu values('2106', '设备新增', '2011', '2', '#', '', '', '', 1, 0, 'F', '0', '0', 'virtual:device:add', '#', 'admin', sysdate(), '', null, '');
+insert into sys_menu values('2107', '设备修改', '2011', '3', '#', '', '', '', 1, 0, 'F', '0', '0', 'virtual:device:edit', '#', 'admin', sysdate(), '', null, '');
+insert into sys_menu values('2108', '设备删除', '2011', '4', '#', '', '', '', 1, 0, 'F', '0', '0', 'virtual:device:remove', '#', 'admin', sysdate(), '', null, '');
+insert into sys_menu values('2109', '设备导出', '2011', '5', '#', '', '', '', 1, 0, 'F', '0', '0', 'virtual:device:export', '#', 'admin', sysdate(), '', null, '');
+insert into sys_menu values('2110', '资源查询', '2012', '1', '#', '', '', '', 1, 0, 'F', '0', '0', 'virtual:resource:query', '#', 'admin', sysdate(), '', null, '');
+insert into sys_menu values('2111', '资源新增', '2012', '2', '#', '', '', '', 1, 0, 'F', '0', '0', 'virtual:resource:add', '#', 'admin', sysdate(), '', null, '');
+insert into sys_menu values('2112', '资源修改', '2012', '3', '#', '', '', '', 1, 0, 'F', '0', '0', 'virtual:resource:edit', '#', 'admin', sysdate(), '', null, '');
+insert into sys_menu values('2113', '资源删除', '2012', '4', '#', '', '', '', 1, 0, 'F', '0', '0', 'virtual:resource:remove', '#', 'admin', sysdate(), '', null, '');
+insert into sys_menu values('2114', '资源导出', '2012', '5', '#', '', '', '', 1, 0, 'F', '0', '0', 'virtual:resource:export', '#', 'admin', sysdate(), '', null, '');
+insert into sys_menu values('2115', '申请查询', '2013', '1', '#', '', '', '', 1, 0, 'F', '0', '0', 'virtual:shareApply:query', '#', 'admin', sysdate(), '', null, '');
+insert into sys_menu values('2116', '申请新增', '2013', '2', '#', '', '', '', 1, 0, 'F', '0', '0', 'virtual:shareApply:add', '#', 'admin', sysdate(), '', null, '');
+insert into sys_menu values('2117', '申请修改', '2013', '3', '#', '', '', '', 1, 0, 'F', '0', '0', 'virtual:shareApply:edit', '#', 'admin', sysdate(), '', null, '');
+insert into sys_menu values('2118', '申请删除', '2013', '4', '#', '', '', '', 1, 0, 'F', '0', '0', 'virtual:shareApply:remove', '#', 'admin', sysdate(), '', null, '');
+insert into sys_menu values('2119', '申请导出', '2013', '5', '#', '', '', '', 1, 0, 'F', '0', '0', 'virtual:shareApply:export', '#', 'admin', sysdate(), '', null, '');
+insert into sys_menu values('2120', '申请审核', '2013', '6', '#', '', '', '', 1, 0, 'F', '0', '0', 'virtual:shareApply:audit', '#', 'admin', sysdate(), '', null, '');
+insert into sys_menu values('2121', '课程查询', '2014', '1', '#', '', '', '', 1, 0, 'F', '0', '0', 'virtual:course:query', '#', 'admin', sysdate(), '', null, '');
+insert into sys_menu values('2122', '课程新增', '2014', '2', '#', '', '', '', 1, 0, 'F', '0', '0', 'virtual:course:add', '#', 'admin', sysdate(), '', null, '');
+insert into sys_menu values('2123', '课程修改', '2014', '3', '#', '', '', '', 1, 0, 'F', '0', '0', 'virtual:course:edit', '#', 'admin', sysdate(), '', null, '');
+insert into sys_menu values('2124', '课程删除', '2014', '4', '#', '', '', '', 1, 0, 'F', '0', '0', 'virtual:course:remove', '#', 'admin', sysdate(), '', null, '');
+insert into sys_menu values('2125', '课程导出', '2014', '5', '#', '', '', '', 1, 0, 'F', '0', '0', 'virtual:course:export', '#', 'admin', sysdate(), '', null, '');
+insert into sys_menu values('2126', '实验查询', '2015', '1', '#', '', '', '', 1, 0, 'F', '0', '0', 'virtual:experiment:query', '#', 'admin', sysdate(), '', null, '');
+insert into sys_menu values('2127', '实验新增', '2015', '2', '#', '', '', '', 1, 0, 'F', '0', '0', 'virtual:experiment:add', '#', 'admin', sysdate(), '', null, '');
+insert into sys_menu values('2128', '实验修改', '2015', '3', '#', '', '', '', 1, 0, 'F', '0', '0', 'virtual:experiment:edit', '#', 'admin', sysdate(), '', null, '');
+insert into sys_menu values('2129', '实验删除', '2015', '4', '#', '', '', '', 1, 0, 'F', '0', '0', 'virtual:experiment:remove', '#', 'admin', sysdate(), '', null, '');
+insert into sys_menu values('2130', '实验导出', '2015', '5', '#', '', '', '', 1, 0, 'F', '0', '0', 'virtual:experiment:export', '#', 'admin', sysdate(), '', null, '');
+insert into sys_menu values('2131', '计划查询', '2016', '1', '#', '', '', '', 1, 0, 'F', '0', '0', 'virtual:plan:query', '#', 'admin', sysdate(), '', null, '');
+insert into sys_menu values('2132', '计划新增', '2016', '2', '#', '', '', '', 1, 0, 'F', '0', '0', 'virtual:plan:add', '#', 'admin', sysdate(), '', null, '');
+insert into sys_menu values('2133', '计划修改', '2016', '3', '#', '', '', '', 1, 0, 'F', '0', '0', 'virtual:plan:edit', '#', 'admin', sysdate(), '', null, '');
+insert into sys_menu values('2134', '计划删除', '2016', '4', '#', '', '', '', 1, 0, 'F', '0', '0', 'virtual:plan:remove', '#', 'admin', sysdate(), '', null, '');
+insert into sys_menu values('2135', '计划导出', '2016', '5', '#', '', '', '', 1, 0, 'F', '0', '0', 'virtual:plan:export', '#', 'admin', sysdate(), '', null, '');
+insert into sys_menu values('2136', '结果查询', '2017', '1', '#', '', '', '', 1, 0, 'F', '0', '0', 'virtual:record:query', '#', 'admin', sysdate(), '', null, '');
+insert into sys_menu values('2137', '结果新增', '2017', '2', '#', '', '', '', 1, 0, 'F', '0', '0', 'virtual:record:add', '#', 'admin', sysdate(), '', null, '');
+insert into sys_menu values('2138', '结果修改', '2017', '3', '#', '', '', '', 1, 0, 'F', '0', '0', 'virtual:record:edit', '#', 'admin', sysdate(), '', null, '');
+insert into sys_menu values('2139', '结果删除', '2017', '4', '#', '', '', '', 1, 0, 'F', '0', '0', 'virtual:record:remove', '#', 'admin', sysdate(), '', null, '');
+insert into sys_menu values('2140', '结果导出', '2017', '5', '#', '', '', '', 1, 0, 'F', '0', '0', 'virtual:record:export', '#', 'admin', sysdate(), '', null, '');
+
+insert into sys_role_menu values ('2', '2000');
+insert into sys_role_menu values ('2', '2001');
+insert into sys_role_menu values ('2', '2002');
+insert into sys_role_menu values ('2', '2003');
+insert into sys_role_menu values ('2', '2004');
+insert into sys_role_menu values ('2', '2010');
+insert into sys_role_menu values ('2', '2011');
+insert into sys_role_menu values ('2', '2012');
+insert into sys_role_menu values ('2', '2013');
+insert into sys_role_menu values ('2', '2014');
+insert into sys_role_menu values ('2', '2015');
+insert into sys_role_menu values ('2', '2016');
+insert into sys_role_menu values ('2', '2017');
+insert into sys_role_menu values ('2', '2018');
+insert into sys_role_menu values ('2', '2019');
+insert into sys_role_menu values ('2', '2020');
+insert into sys_role_menu values ('2', '2021');
+insert into sys_role_menu values ('2', '2022');
+insert into sys_role_menu values ('2', '2023');
+insert into sys_role_menu values ('2', '2024');
+insert into sys_role_menu values ('2', '2025');
+insert into sys_role_menu values ('2', '2026');
+insert into sys_role_menu values ('2', '2100');
+insert into sys_role_menu values ('2', '2101');
+insert into sys_role_menu values ('2', '2102');
+insert into sys_role_menu values ('2', '2103');
+insert into sys_role_menu values ('2', '2104');
+insert into sys_role_menu values ('2', '2105');
+insert into sys_role_menu values ('2', '2106');
+insert into sys_role_menu values ('2', '2107');
+insert into sys_role_menu values ('2', '2108');
+insert into sys_role_menu values ('2', '2109');
+insert into sys_role_menu values ('2', '2110');
+insert into sys_role_menu values ('2', '2111');
+insert into sys_role_menu values ('2', '2112');
+insert into sys_role_menu values ('2', '2113');
+insert into sys_role_menu values ('2', '2114');
+insert into sys_role_menu values ('2', '2115');
+insert into sys_role_menu values ('2', '2116');
+insert into sys_role_menu values ('2', '2117');
+insert into sys_role_menu values ('2', '2118');
+insert into sys_role_menu values ('2', '2119');
+insert into sys_role_menu values ('2', '2120');
+insert into sys_role_menu values ('2', '2121');
+insert into sys_role_menu values ('2', '2122');
+insert into sys_role_menu values ('2', '2123');
+insert into sys_role_menu values ('2', '2124');
+insert into sys_role_menu values ('2', '2125');
+insert into sys_role_menu values ('2', '2126');
+insert into sys_role_menu values ('2', '2127');
+insert into sys_role_menu values ('2', '2128');
+insert into sys_role_menu values ('2', '2129');
+insert into sys_role_menu values ('2', '2130');
+insert into sys_role_menu values ('2', '2131');
+insert into sys_role_menu values ('2', '2132');
+insert into sys_role_menu values ('2', '2133');
+insert into sys_role_menu values ('2', '2134');
+insert into sys_role_menu values ('2', '2135');
+insert into sys_role_menu values ('2', '2136');
+insert into sys_role_menu values ('2', '2137');
+insert into sys_role_menu values ('2', '2138');
+insert into sys_role_menu values ('2', '2139');
+insert into sys_role_menu values ('2', '2140');
+
+
+-- ----------------------------
+-- 初始化-虚拟仿真实训演示数据
+-- ----------------------------
+insert into vt_lab values(100, '智能制造虚拟仿真实训室', '数字工程学院', '双高校区A座301', 48, '0', '周老师', '13800000001', '面向智能制造、工业机器人和数字孪生方向开放的综合实训室。', 'admin', sysdate(), '', null, '核心实训场所');
+insert into vt_lab values(101, '护理急救虚拟仿真实训室', '医护健康学院', '双高校区B座205', 36, '0', '李老师', '13800000002', '提供急救护理、临床处置和团队协同训练环境。', 'admin', sysdate(), '', null, '');
+insert into vt_lab values(102, '新能源汽车虚拟仿真实训室', '交通工程学院', '产教融合中心2层', 42, '2', '王老师', '13800000003', '用于新能源汽车诊断、动力电池安全和维修流程仿真。', 'admin', sysdate(), '', null, '');
+
+insert into vt_device values(100, 'VR一体化训练终端', 'VT-VR-2026-001', 100, 'VR终端', '0', '0', sysdate(), 'admin', sysdate(), '', null, '资源中心展示设备');
+insert into vt_device values(101, '工业机器人仿真工作站', 'VT-ROBOT-2026-002', 100, '仿真工作站', '0', '0', sysdate(), 'admin', sysdate(), '', null, '');
+insert into vt_device values(102, '急救流程交互模拟台', 'VT-MED-2026-003', 101, '交互模拟台', '0', '1', sysdate(), 'admin', sysdate(), '', null, '');
+insert into vt_device values(103, '动力电池安全仿真台', 'VT-NEV-2026-004', 102, '仿真台', '1', '1', sysdate(), 'admin', sysdate(), '', null, '维护中');
+
+insert into vt_resource values(100, '工业机器人拆装虚拟仿真实训资源', '0', '智能制造', '工业机器人技术', '', '/profile/upload/robot-vr.zip', '0', 1268, 96, '覆盖工业机器人结构认知、拆装步骤和故障诊断。', 'admin', sysdate(), '', null, '门户推荐资源');
+insert into vt_resource values(101, '心肺复苏标准流程视频课程', '1', '护理', '急救护理', '', '/profile/upload/cpr.mp4', '0', 842, 73, '演示心肺复苏标准动作、评分点和常见错误。', 'admin', sysdate(), '', null, '');
+insert into vt_resource values(102, '新能源汽车动力电池安全操作文档', '3', '新能源汽车', '动力电池维护', '', '/profile/upload/battery-guide.pdf', '1', 536, 42, '面向动力电池检测、绝缘防护和安全处置的操作说明。', 'admin', sysdate(), '', null, '');
+insert into vt_resource values(103, '跨境电商仓储调度虚拟仿真', '0', '现代商贸', '智慧仓储管理', '', '/profile/upload/warehouse-vr.zip', '0', 710, 58, '模拟跨境仓储、订单拣选和物流调度。', 'admin', sysdate(), '', null, '');
+
+insert into vt_course values(100, '工业机器人综合实训', '智能制造', 64, '陈老师', '0', '围绕机器人认知、编程、调试和故障诊断组织实训。', 'admin', sysdate(), '', null, '');
+insert into vt_course values(101, '急救护理虚拟实训', '医护健康', 48, '赵老师', '0', '以场景化仿真提升急救护理流程掌握程度。', 'admin', sysdate(), '', null, '');
+insert into vt_course values(102, '新能源汽车检测实训', '交通工程', 56, '孙老师', '0', '面向新能源汽车三电系统检测与安全操作。', 'admin', sysdate(), '', null, '');
+
+insert into vt_experiment values(100, '工业机器人末端执行器拆装实验', 100, 100, '2', 90, '0', '在虚拟环境中完成末端执行器识别、拆装和调试。', 'admin', sysdate(), '', null, '');
+insert into vt_experiment values(101, '心肺复苏急救流程实验', 101, 101, '1', 45, '0', '通过视频和交互流程完成心肺复苏训练。', 'admin', sysdate(), '', null, '');
+insert into vt_experiment values(102, '动力电池高压安全检测实验', 102, 102, '3', 80, '1', '模拟动力电池高压检测与异常处置流程。', 'admin', sysdate(), '', null, '');
+
+insert into vt_teaching_plan values(100, '2026春季智能制造综合实训计划', 100, 100, '智能制造2301班', date_add(sysdate(), interval -5 day), date_add(sysdate(), interval 10 day), '1', '周老师', 'admin', sysdate(), '', null, '');
+insert into vt_teaching_plan values(101, '护理急救开放共享训练计划', 101, 101, '社会培训班A组', date_add(sysdate(), interval -12 day), date_add(sysdate(), interval -2 day), '2', '李老师', 'admin', sysdate(), '', null, '');
+insert into vt_teaching_plan values(102, '新能源汽车检测预备计划', 102, 102, '新能源2402班', date_add(sysdate(), interval 3 day), date_add(sysdate(), interval 20 day), '0', '王老师', 'admin', sysdate(), '', null, '');
+
+insert into vt_training_record values(100, 100, '张明', '20230001', date_add(sysdate(), interval -4 day), date_add(sysdate(), interval -4 day), '1', 92.50, 78, '操作步骤完整，诊断结果准确。', 'admin', sysdate(), '', null, '');
+insert into vt_training_record values(101, 100, '刘佳', '20230002', date_add(sysdate(), interval -3 day), date_add(sysdate(), interval -3 day), '1', 88.00, 82, '拆装过程规范，调试记录较完整。', 'admin', sysdate(), '', null, '');
+insert into vt_training_record values(102, 101, '王磊', 'OPEN0001', date_add(sysdate(), interval -8 day), date_add(sysdate(), interval -8 day), '1', 95.00, 38, '急救流程熟练，节奏控制较好。', 'admin', sysdate(), '', null, '');
+insert into vt_training_record values(103, 101, '陈晨', 'OPEN0002', date_add(sysdate(), interval -7 day), null, '0', 0, 0, '训练未完成。', 'admin', sysdate(), '', null, '');
+
+insert into vt_share_apply values(100, '黄先生', '13900000001', '某职业技术学院', '0', 100, '工业机器人拆装虚拟仿真实训资源', date_add(sysdate(), interval 2 day), 12, '0', '', 'admin', sysdate(), '', null, '门户提交演示');
+insert into vt_share_apply values(101, '林女士', '13900000002', '区域产教联合体', '1', 101, '护理急救虚拟仿真实训室', date_add(sysdate(), interval -3 day), 20, '1', '同意开放半天实训时段。', 'admin', sysdate(), '', null, '');
+insert into vt_share_apply values(102, '郑老师', '13900000003', '兄弟院校', '0', 102, '新能源汽车动力电池安全操作文档', date_add(sysdate(), interval -1 day), 8, '2', '资源当前仅校内开放，请补充合作证明。', 'admin', sysdate(), '', null, '');
