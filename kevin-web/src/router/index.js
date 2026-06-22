@@ -52,6 +52,20 @@ export const constantRoutes = [
     hidden: true
   },
   {
+    path: '/portal',
+    component: Layout,
+    redirect: '/portal/home',
+    children: [
+      { path: 'home', component: () => import('@/views/portal/home'), name: 'PortalHome', meta: { title: '平台首页', icon: 'dashboard' } },
+      { path: 'news', component: () => import('@/views/portal/news'), name: 'PortalNews', meta: { title: '新闻公告', icon: 'message' } },
+      { path: 'resources', component: () => import('@/views/portal/resources'), name: 'PortalResources', meta: { title: '资源中心', icon: 'documentation' } },
+      { path: 'experiments', component: () => import('@/views/portal/experiments'), name: 'PortalExperiments', meta: { title: '实训实验', icon: 'skill' } },
+      { path: 'labs', component: () => import('@/views/portal/labs'), name: 'PortalLabs', meta: { title: '实验室', icon: 'education' } },
+      { path: 'share', component: () => import('@/views/portal/share'), name: 'PortalShare', meta: { title: '共享开放', icon: 'link' } },
+      { path: 'screen', component: () => import('@/views/portal/screen'), name: 'PortalScreen', meta: { title: '数据大屏', icon: 'chart' } }
+    ]
+  },
+  {
     path: '/404',
     component: () => import('@/views/error/404'),
     hidden: true

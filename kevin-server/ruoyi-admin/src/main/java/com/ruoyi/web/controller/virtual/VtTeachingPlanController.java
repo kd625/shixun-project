@@ -84,4 +84,13 @@ public class VtTeachingPlanController extends BaseController
     {
         return toAjax(teachingPlanService.deleteVtTeachingPlanByIds(planIds));
     }
+
+    /**
+     * 获取TeachingPlan选择框列表
+     */
+    @GetMapping("/optionselect")
+    public AjaxResult optionselect()
+    {
+        return success(teachingPlanService.selectVtTeachingPlanList(new VtTeachingPlan()));
+    }
 }

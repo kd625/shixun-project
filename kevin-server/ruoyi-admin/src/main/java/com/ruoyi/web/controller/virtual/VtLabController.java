@@ -84,4 +84,13 @@ public class VtLabController extends BaseController
     {
         return toAjax(labService.deleteVtLabByIds(labIds));
     }
+
+    /**
+     * 获取Lab选择框列表
+     */
+    @GetMapping("/optionselect")
+    public AjaxResult optionselect()
+    {
+        return success(labService.selectVtLabList(new VtLab()));
+    }
 }

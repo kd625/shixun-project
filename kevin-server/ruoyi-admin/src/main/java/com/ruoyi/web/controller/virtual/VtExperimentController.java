@@ -84,4 +84,13 @@ public class VtExperimentController extends BaseController
     {
         return toAjax(experimentService.deleteVtExperimentByIds(experimentIds));
     }
+
+    /**
+     * 获取Experiment选择框列表
+     */
+    @GetMapping("/optionselect")
+    public AjaxResult optionselect()
+    {
+        return success(experimentService.selectVtExperimentList(new VtExperiment()));
+    }
 }

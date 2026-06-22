@@ -84,4 +84,13 @@ public class VtResourceController extends BaseController
     {
         return toAjax(resourceService.deleteVtResourceByIds(resourceIds));
     }
+
+    /**
+     * 获取Resource选择框列表
+     */
+    @GetMapping("/optionselect")
+    public AjaxResult optionselect()
+    {
+        return success(resourceService.selectVtResourceList(new VtResource()));
+    }
 }

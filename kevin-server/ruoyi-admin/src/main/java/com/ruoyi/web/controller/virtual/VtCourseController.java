@@ -84,4 +84,13 @@ public class VtCourseController extends BaseController
     {
         return toAjax(courseService.deleteVtCourseByIds(courseIds));
     }
+
+    /**
+     * 获取Course选择框列表
+     */
+    @GetMapping("/optionselect")
+    public AjaxResult optionselect()
+    {
+        return success(courseService.selectVtCourseList(new VtCourse()));
+    }
 }
