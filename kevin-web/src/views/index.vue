@@ -2,7 +2,7 @@
   <div class="app-container platform-home">
     <div class="hero-band">
       <div>
-        <h2>虚拟仿真实训教学管理及资源共享云平台</h2>
+        <h2>成理虚拟仿真实训教学管理及资源共享云平台</h2>
         <p>面向双高院校的实训场所、设备、资源、课程和共享开放一体化管理平台。</p>
       </div>
       <el-button type="primary" icon="el-icon-data-analysis" @click="$router.push('/portal/screen')">查看数据大屏</el-button>

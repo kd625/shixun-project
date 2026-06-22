@@ -1,7 +1,7 @@
 {
   "name": "kevin-web",
   "version": "3.9.2",
-  "description": "若依管理系统",
+  "description": "成理虚拟仿真实训教学管理及资源共享云平台",
   "author": "若依",
   "license": "MIT",
   "scripts": {
