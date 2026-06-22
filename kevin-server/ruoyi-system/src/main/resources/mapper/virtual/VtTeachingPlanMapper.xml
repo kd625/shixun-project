@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.virtualmapper.VtTeachingPlanMapper">
+
+	<resultMap type="VtTeachingPlan" id="VtTeachingPlanResult">
+		<id property="planId" column="plan_id" />
+		<result property="planName" column="plan_name" />
+		<result property="courseId" column="course_id" />
+		<result property="experimentId" column="experiment_id" />
+		<result property="classTarget" column="class_target" />
+		<result property="startTime" column="start_time" />
+		<result property="endTime" column="end_time" />
+		<result property="planStatus" column="plan_status" />
+		<result property="managerName" column="manager_name" />
+		<result property="createBy" column="create_by" />
+		<result property="createTime" column="create_time" />
+		<result property="updateBy" column="update_by" />
+		<result property="updateTime" column="update_time" />
+		<result property="remark" column="remark" />
+	</resultMap>
+
+	<sql id="selectVtTeachingPlanVo">
+		select plan_id, plan_name, course_id, experiment_id, class_target, start_time, end_time, plan_status, manager_name, create_by, create_time, update_by, update_time, remark from vt_teaching_plan
+	</sql>
+
+	<select id="selectVtTeachingPlanList" parameterType="VtTeachingPlan" resultMap="VtTeachingPlanResult">
+		<include refid="selectVtTeachingPlanVo"/>
+		<where>
+			<if test="planName != null and planName != ''"> and plan_name like concat('%', #{planName}, '%')</if>
+			<if test="classTarget != null and classTarget != ''"> and class_target like concat('%', #{classTarget}, '%')</if>
+			<if test="planStatus != null and planStatus != ''"> and plan_status like concat('%', #{planStatus}, '%')</if>
+			<if test="managerName != null and managerName != ''"> and manager_name like concat('%', #{managerName}, '%')</if>
+			<if test="courseId != null"> and course_id = #{courseId}</if>
+			<if test="experimentId != null"> and experiment_id = #{experimentId}</if>
+		</where>
+		order by create_time desc
+	</select>
+
+	<select id="selectVtTeachingPlanById" parameterType="Long" resultMap="VtTeachingPlanResult">
+		<include refid="selectVtTeachingPlanVo"/>
+		where plan_id = #{planId}
+	</select>
+
+	<insert id="insertVtTeachingPlan" parameterType="VtTeachingPlan" useGeneratedKeys="true" keyProperty="planId">
+		insert into vt_teaching_plan
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="planId != null">plan_id,</if>
+			<if test="planName != null and planName != ''">plan_name,</if>
+			<if test="courseId != null">course_id,</if>
+			<if test="experimentId != null">experiment_id,</if>
+			<if test="classTarget != null and classTarget != ''">class_target,</if>
+			<if test="startTime != null">start_time,</if>
+			<if test="endTime != null">end_time,</if>
+			<if test="planStatus != null and planStatus != ''">plan_status,</if>
+			<if test="managerName != null and managerName != ''">manager_name,</if>
+			<if test="createBy != null and createBy != ''">create_by,</if>
+			<if test="remark != null and remark != ''">remark,</if>
+			create_time
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="planId != null">#{planId},</if>
+			<if test="planName != null and planName != ''">#{planName},</if>
+			<if test="courseId != null">#{courseId},</if>
+			<if test="experimentId != null">#{experimentId},</if>
+			<if test="classTarget != null and classTarget != ''">#{classTarget},</if>
+			<if test="startTime != null">#{startTime},</if>
+			<if test="endTime != null">#{endTime},</if>
+			<if test="planStatus != null and planStatus != ''">#{planStatus},</if>
+			<if test="managerName != null and managerName != ''">#{managerName},</if>
+			<if test="createBy != null and createBy != ''">#{createBy},</if>
+			<if test="remark != null and remark != ''">#{remark},</if>
+			sysdate()
+		</trim>
+	</insert>
+
+	<update id="updateVtTeachingPlan" parameterType="VtTeachingPlan">
+		update vt_teaching_plan
+		<set>
+			<if test="planName != null and planName != ''">plan_name = #{planName},</if>
+			<if test="courseId != null">course_id = #{courseId},</if>
+			<if test="experimentId != null">experiment_id = #{experimentId},</if>
+			<if test="classTarget != null and classTarget != ''">class_target = #{classTarget},</if>
+			<if test="startTime != null">start_time = #{startTime},</if>
+			<if test="endTime != null">end_time = #{endTime},</if>
+			<if test="planStatus != null and planStatus != ''">plan_status = #{planStatus},</if>
+			<if test="managerName != null and managerName != ''">manager_name = #{managerName},</if>
+			<if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
+			<if test="remark != null and remark != ''">remark = #{remark},</if>
+			update_time = sysdate()
+		</set>
+		where plan_id = #{planId}
+	</update>
+
+	<delete id="deleteVtTeachingPlanById" parameterType="Long">
+		delete from vt_teaching_plan where plan_id = #{planId}
+	</delete>
+
+	<delete id="deleteVtTeachingPlanByIds" parameterType="Long">
+		delete from vt_teaching_plan where plan_id in
+		<foreach collection="array" item="planId" open="(" separator="," close=")">
+			#{planId}
+		</foreach>
+	</delete>
+</mapper>

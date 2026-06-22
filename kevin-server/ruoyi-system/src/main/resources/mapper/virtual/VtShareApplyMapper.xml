@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.virtualmapper.VtShareApplyMapper">
+
+	<resultMap type="VtShareApply" id="VtShareApplyResult">
+		<id property="applyId" column="apply_id" />
+		<result property="applicantName" column="applicant_name" />
+		<result property="phone" column="phone" />
+		<result property="organization" column="organization" />
+		<result property="applyType" column="apply_type" />
+		<result property="targetId" column="target_id" />
+		<result property="targetName" column="target_name" />
+		<result property="reserveTime" column="reserve_time" />
+		<result property="userCount" column="user_count" />
+		<result property="applyStatus" column="apply_status" />
+		<result property="auditOpinion" column="audit_opinion" />
+		<result property="createBy" column="create_by" />
+		<result property="createTime" column="create_time" />
+		<result property="updateBy" column="update_by" />
+		<result property="updateTime" column="update_time" />
+		<result property="remark" column="remark" />
+	</resultMap>
+
+	<sql id="selectVtShareApplyVo">
+		select apply_id, applicant_name, phone, organization, apply_type, target_id, target_name, reserve_time, user_count, apply_status, audit_opinion, create_by, create_time, update_by, update_time, remark from vt_share_apply
+	</sql>
+
+	<select id="selectVtShareApplyList" parameterType="VtShareApply" resultMap="VtShareApplyResult">
+		<include refid="selectVtShareApplyVo"/>
+		<where>
+			<if test="applicantName != null and applicantName != ''"> and applicant_name like concat('%', #{applicantName}, '%')</if>
+			<if test="phone != null and phone != ''"> and phone like concat('%', #{phone}, '%')</if>
+			<if test="organization != null and organization != ''"> and organization like concat('%', #{organization}, '%')</if>
+			<if test="applyType != null and applyType != ''"> and apply_type like concat('%', #{applyType}, '%')</if>
+			<if test="targetId != null"> and target_id = #{targetId}</if>
+			<if test="reserveTime != null"> and reserve_time = #{reserveTime}</if>
+		</where>
+		order by create_time desc
+	</select>
+
+	<select id="selectVtShareApplyById" parameterType="Long" resultMap="VtShareApplyResult">
+		<include refid="selectVtShareApplyVo"/>
+		where apply_id = #{applyId}
+	</select>
+
+	<insert id="insertVtShareApply" parameterType="VtShareApply" useGeneratedKeys="true" keyProperty="applyId">
+		insert into vt_share_apply
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="applyId != null">apply_id,</if>
+			<if test="applicantName != null and applicantName != ''">applicant_name,</if>
+			<if test="phone != null and phone != ''">phone,</if>
+			<if test="organization != null and organization != ''">organization,</if>
+			<if test="applyType != null and applyType != ''">apply_type,</if>
+			<if test="targetId != null">target_id,</if>
+			<if test="targetName != null and targetName != ''">target_name,</if>
+			<if test="reserveTime != null">reserve_time,</if>
+			<if test="userCount != null">user_count,</if>
+			<if test="applyStatus != null and applyStatus != ''">apply_status,</if>
+			<if test="auditOpinion != null and auditOpinion != ''">audit_opinion,</if>
+			<if test="createBy != null and createBy != ''">create_by,</if>
+			<if test="remark != null and remark != ''">remark,</if>
+			create_time
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="applyId != null">#{applyId},</if>
+			<if test="applicantName != null and applicantName != ''">#{applicantName},</if>
+			<if test="phone != null and phone != ''">#{phone},</if>
+			<if test="organization != null and organization != ''">#{organization},</if>
+			<if test="applyType != null and applyType != ''">#{applyType},</if>
+			<if test="targetId != null">#{targetId},</if>
+			<if test="targetName != null and targetName != ''">#{targetName},</if>
+			<if test="reserveTime != null">#{reserveTime},</if>
+			<if test="userCount != null">#{userCount},</if>
+			<if test="applyStatus != null and applyStatus != ''">#{applyStatus},</if>
+			<if test="auditOpinion != null and auditOpinion != ''">#{auditOpinion},</if>
+			<if test="createBy != null and createBy != ''">#{createBy},</if>
+			<if test="remark != null and remark != ''">#{remark},</if>
+			sysdate()
+		</trim>
+	</insert>
+
+	<update id="updateVtShareApply" parameterType="VtShareApply">
+		update vt_share_apply
+		<set>
+			<if test="applicantName != null and applicantName != ''">applicant_name = #{applicantName},</if>
+			<if test="phone != null and phone != ''">phone = #{phone},</if>
+			<if test="organization != null and organization != ''">organization = #{organization},</if>
+			<if test="applyType != null and applyType != ''">apply_type = #{applyType},</if>
+			<if test="targetId != null">target_id = #{targetId},</if>
+			<if test="targetName != null and targetName != ''">target_name = #{targetName},</if>
+			<if test="reserveTime != null">reserve_time = #{reserveTime},</if>
+			<if test="userCount != null">user_count = #{userCount},</if>
+			<if test="applyStatus != null and applyStatus != ''">apply_status = #{applyStatus},</if>
+			<if test="auditOpinion != null and auditOpinion != ''">audit_opinion = #{auditOpinion},</if>
+			<if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
+			<if test="remark != null and remark != ''">remark = #{remark},</if>
+			update_time = sysdate()
+		</set>
+		where apply_id = #{applyId}
+	</update>
+
+	<delete id="deleteVtShareApplyById" parameterType="Long">
+		delete from vt_share_apply where apply_id = #{applyId}
+	</delete>
+
+	<delete id="deleteVtShareApplyByIds" parameterType="Long">
+		delete from vt_share_apply where apply_id in
+		<foreach collection="array" item="applyId" open="(" separator="," close=")">
+			#{applyId}
+		</foreach>
+	</delete>
+</mapper>

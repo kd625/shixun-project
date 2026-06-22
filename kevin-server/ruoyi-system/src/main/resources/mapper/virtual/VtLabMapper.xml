@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.virtualmapper.VtLabMapper">
+
+	<resultMap type="VtLab" id="VtLabResult">
+		<id property="labId" column="lab_id" />
+		<result property="labName" column="lab_name" />
+		<result property="collegeName" column="college_name" />
+		<result property="location" column="location" />
+		<result property="capacity" column="capacity" />
+		<result property="openStatus" column="open_status" />
+		<result property="managerName" column="manager_name" />
+		<result property="contactPhone" column="contact_phone" />
+		<result property="introduction" column="introduction" />
+		<result property="createBy" column="create_by" />
+		<result property="createTime" column="create_time" />
+		<result property="updateBy" column="update_by" />
+		<result property="updateTime" column="update_time" />
+		<result property="remark" column="remark" />
+	</resultMap>
+
+	<sql id="selectVtLabVo">
+		select lab_id, lab_name, college_name, location, capacity, open_status, manager_name, contact_phone, introduction, create_by, create_time, update_by, update_time, remark from vt_lab
+	</sql>
+
+	<select id="selectVtLabList" parameterType="VtLab" resultMap="VtLabResult">
+		<include refid="selectVtLabVo"/>
+		<where>
+			<if test="labName != null and labName != ''"> and lab_name like concat('%', #{labName}, '%')</if>
+			<if test="collegeName != null and collegeName != ''"> and college_name like concat('%', #{collegeName}, '%')</if>
+			<if test="location != null and location != ''"> and location like concat('%', #{location}, '%')</if>
+			<if test="openStatus != null and openStatus != ''"> and open_status like concat('%', #{openStatus}, '%')</if>
+			<if test="capacity != null"> and capacity = #{capacity}</if>
+		</where>
+		order by create_time desc
+	</select>
+
+	<select id="selectVtLabById" parameterType="Long" resultMap="VtLabResult">
+		<include refid="selectVtLabVo"/>
+		where lab_id = #{labId}
+	</select>
+
+	<insert id="insertVtLab" parameterType="VtLab" useGeneratedKeys="true" keyProperty="labId">
+		insert into vt_lab
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="labId != null">lab_id,</if>
+			<if test="labName != null and labName != ''">lab_name,</if>
+			<if test="collegeName != null and collegeName != ''">college_name,</if>
+			<if test="location != null and location != ''">location,</if>
+			<if test="capacity != null">capacity,</if>
+			<if test="openStatus != null and openStatus != ''">open_status,</if>
+			<if test="managerName != null and managerName != ''">manager_name,</if>
+			<if test="contactPhone != null and contactPhone != ''">contact_phone,</if>
+			<if test="introduction != null and introduction != ''">introduction,</if>
+			<if test="createBy != null and createBy != ''">create_by,</if>
+			<if test="remark != null and remark != ''">remark,</if>
+			create_time
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="labId != null">#{labId},</if>
+			<if test="labName != null and labName != ''">#{labName},</if>
+			<if test="collegeName != null and collegeName != ''">#{collegeName},</if>
+			<if test="location != null and location != ''">#{location},</if>
+			<if test="capacity != null">#{capacity},</if>
+			<if test="openStatus != null and openStatus != ''">#{openStatus},</if>
+			<if test="managerName != null and managerName != ''">#{managerName},</if>
+			<if test="contactPhone != null and contactPhone != ''">#{contactPhone},</if>
+			<if test="introduction != null and introduction != ''">#{introduction},</if>
+			<if test="createBy != null and createBy != ''">#{createBy},</if>
+			<if test="remark != null and remark != ''">#{remark},</if>
+			sysdate()
+		</trim>
+	</insert>
+
+	<update id="updateVtLab" parameterType="VtLab">
+		update vt_lab
+		<set>
+			<if test="labName != null and labName != ''">lab_name = #{labName},</if>
+			<if test="collegeName != null and collegeName != ''">college_name = #{collegeName},</if>
+			<if test="location != null and location != ''">location = #{location},</if>
+			<if test="capacity != null">capacity = #{capacity},</if>
+			<if test="openStatus != null and openStatus != ''">open_status = #{openStatus},</if>
+			<if test="managerName != null and managerName != ''">manager_name = #{managerName},</if>
+			<if test="contactPhone != null and contactPhone != ''">contact_phone = #{contactPhone},</if>
+			<if test="introduction != null and introduction != ''">introduction = #{introduction},</if>
+			<if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
+			<if test="remark != null and remark != ''">remark = #{remark},</if>
+			update_time = sysdate()
+		</set>
+		where lab_id = #{labId}
+	</update>
+
+	<delete id="deleteVtLabById" parameterType="Long">
+		delete from vt_lab where lab_id = #{labId}
+	</delete>
+
+	<delete id="deleteVtLabByIds" parameterType="Long">
+		delete from vt_lab where lab_id in
+		<foreach collection="array" item="labId" open="(" separator="," close=")">
+			#{labId}
+		</foreach>
+	</delete>
+</mapper>

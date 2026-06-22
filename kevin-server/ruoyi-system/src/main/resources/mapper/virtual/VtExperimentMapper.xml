@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.virtualmapper.VtExperimentMapper">
+
+	<resultMap type="VtExperiment" id="VtExperimentResult">
+		<id property="experimentId" column="experiment_id" />
+		<result property="experimentName" column="experiment_name" />
+		<result property="courseId" column="course_id" />
+		<result property="resourceId" column="resource_id" />
+		<result property="difficulty" column="difficulty" />
+		<result property="durationMinutes" column="duration_minutes" />
+		<result property="openStatus" column="open_status" />
+		<result property="introduction" column="introduction" />
+		<result property="createBy" column="create_by" />
+		<result property="createTime" column="create_time" />
+		<result property="updateBy" column="update_by" />
+		<result property="updateTime" column="update_time" />
+		<result property="remark" column="remark" />
+	</resultMap>
+
+	<sql id="selectVtExperimentVo">
+		select experiment_id, experiment_name, course_id, resource_id, difficulty, duration_minutes, open_status, introduction, create_by, create_time, update_by, update_time, remark from vt_experiment
+	</sql>
+
+	<select id="selectVtExperimentList" parameterType="VtExperiment" resultMap="VtExperimentResult">
+		<include refid="selectVtExperimentVo"/>
+		<where>
+			<if test="experimentName != null and experimentName != ''"> and experiment_name like concat('%', #{experimentName}, '%')</if>
+			<if test="difficulty != null and difficulty != ''"> and difficulty like concat('%', #{difficulty}, '%')</if>
+			<if test="openStatus != null and openStatus != ''"> and open_status like concat('%', #{openStatus}, '%')</if>
+			<if test="introduction != null and introduction != ''"> and introduction like concat('%', #{introduction}, '%')</if>
+			<if test="courseId != null"> and course_id = #{courseId}</if>
+			<if test="resourceId != null"> and resource_id = #{resourceId}</if>
+		</where>
+		order by create_time desc
+	</select>
+
+	<select id="selectVtExperimentById" parameterType="Long" resultMap="VtExperimentResult">
+		<include refid="selectVtExperimentVo"/>
+		where experiment_id = #{experimentId}
+	</select>
+
+	<insert id="insertVtExperiment" parameterType="VtExperiment" useGeneratedKeys="true" keyProperty="experimentId">
+		insert into vt_experiment
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="experimentId != null">experiment_id,</if>
+			<if test="experimentName != null and experimentName != ''">experiment_name,</if>
+			<if test="courseId != null">course_id,</if>
+			<if test="resourceId != null">resource_id,</if>
+			<if test="difficulty != null and difficulty != ''">difficulty,</if>
+			<if test="durationMinutes != null">duration_minutes,</if>
+			<if test="openStatus != null and openStatus != ''">open_status,</if>
+			<if test="introduction != null and introduction != ''">introduction,</if>
+			<if test="createBy != null and createBy != ''">create_by,</if>
+			<if test="remark != null and remark != ''">remark,</if>
+			create_time
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="experimentId != null">#{experimentId},</if>
+			<if test="experimentName != null and experimentName != ''">#{experimentName},</if>
+			<if test="courseId != null">#{courseId},</if>
+			<if test="resourceId != null">#{resourceId},</if>
+			<if test="difficulty != null and difficulty != ''">#{difficulty},</if>
+			<if test="durationMinutes != null">#{durationMinutes},</if>
+			<if test="openStatus != null and openStatus != ''">#{openStatus},</if>
+			<if test="introduction != null and introduction != ''">#{introduction},</if>
+			<if test="createBy != null and createBy != ''">#{createBy},</if>
+			<if test="remark != null and remark != ''">#{remark},</if>
+			sysdate()
+		</trim>
+	</insert>
+
+	<update id="updateVtExperiment" parameterType="VtExperiment">
+		update vt_experiment
+		<set>
+			<if test="experimentName != null and experimentName != ''">experiment_name = #{experimentName},</if>
+			<if test="courseId != null">course_id = #{courseId},</if>
+			<if test="resourceId != null">resource_id = #{resourceId},</if>
+			<if test="difficulty != null and difficulty != ''">difficulty = #{difficulty},</if>
+			<if test="durationMinutes != null">duration_minutes = #{durationMinutes},</if>
+			<if test="openStatus != null and openStatus != ''">open_status = #{openStatus},</if>
+			<if test="introduction != null and introduction != ''">introduction = #{introduction},</if>
+			<if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
+			<if test="remark != null and remark != ''">remark = #{remark},</if>
+			update_time = sysdate()
+		</set>
+		where experiment_id = #{experimentId}
+	</update>
+
+	<delete id="deleteVtExperimentById" parameterType="Long">
+		delete from vt_experiment where experiment_id = #{experimentId}
+	</delete>
+
+	<delete id="deleteVtExperimentByIds" parameterType="Long">
+		delete from vt_experiment where experiment_id in
+		<foreach collection="array" item="experimentId" open="(" separator="," close=")">
+			#{experimentId}
+		</foreach>
+	</delete>
+</mapper>

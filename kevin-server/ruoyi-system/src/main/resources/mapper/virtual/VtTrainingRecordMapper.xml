@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.virtualmapper.VtTrainingRecordMapper">
+
+	<resultMap type="VtTrainingRecord" id="VtTrainingRecordResult">
+		<id property="recordId" column="record_id" />
+		<result property="planId" column="plan_id" />
+		<result property="studentName" column="student_name" />
+		<result property="studentNo" column="student_no" />
+		<result property="startTime" column="start_time" />
+		<result property="endTime" column="end_time" />
+		<result property="completeStatus" column="complete_status" />
+		<result property="score" column="score" />
+		<result property="durationMinutes" column="duration_minutes" />
+		<result property="evaluation" column="evaluation" />
+		<result property="createBy" column="create_by" />
+		<result property="createTime" column="create_time" />
+		<result property="updateBy" column="update_by" />
+		<result property="updateTime" column="update_time" />
+		<result property="remark" column="remark" />
+	</resultMap>
+
+	<sql id="selectVtTrainingRecordVo">
+		select record_id, plan_id, student_name, student_no, start_time, end_time, complete_status, score, duration_minutes, evaluation, create_by, create_time, update_by, update_time, remark from vt_training_record
+	</sql>
+
+	<select id="selectVtTrainingRecordList" parameterType="VtTrainingRecord" resultMap="VtTrainingRecordResult">
+		<include refid="selectVtTrainingRecordVo"/>
+		<where>
+			<if test="studentName != null and studentName != ''"> and student_name like concat('%', #{studentName}, '%')</if>
+			<if test="studentNo != null and studentNo != ''"> and student_no like concat('%', #{studentNo}, '%')</if>
+			<if test="completeStatus != null and completeStatus != ''"> and complete_status like concat('%', #{completeStatus}, '%')</if>
+			<if test="evaluation != null and evaluation != ''"> and evaluation like concat('%', #{evaluation}, '%')</if>
+			<if test="planId != null"> and plan_id = #{planId}</if>
+			<if test="startTime != null"> and start_time = #{startTime}</if>
+		</where>
+		order by create_time desc
+	</select>
+
+	<select id="selectVtTrainingRecordById" parameterType="Long" resultMap="VtTrainingRecordResult">
+		<include refid="selectVtTrainingRecordVo"/>
+		where record_id = #{recordId}
+	</select>
+
+	<insert id="insertVtTrainingRecord" parameterType="VtTrainingRecord" useGeneratedKeys="true" keyProperty="recordId">
+		insert into vt_training_record
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="recordId != null">record_id,</if>
+			<if test="planId != null">plan_id,</if>
+			<if test="studentName != null and studentName != ''">student_name,</if>
+			<if test="studentNo != null and studentNo != ''">student_no,</if>
+			<if test="startTime != null">start_time,</if>
+			<if test="endTime != null">end_time,</if>
+			<if test="completeStatus != null and completeStatus != ''">complete_status,</if>
+			<if test="score != null">score,</if>
+			<if test="durationMinutes != null">duration_minutes,</if>
+			<if test="evaluation != null and evaluation != ''">evaluation,</if>
+			<if test="createBy != null and createBy != ''">create_by,</if>
+			<if test="remark != null and remark != ''">remark,</if>
+			create_time
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="recordId != null">#{recordId},</if>
+			<if test="planId != null">#{planId},</if>
+			<if test="studentName != null and studentName != ''">#{studentName},</if>
+			<if test="studentNo != null and studentNo != ''">#{studentNo},</if>
+			<if test="startTime != null">#{startTime},</if>
+			<if test="endTime != null">#{endTime},</if>
+			<if test="completeStatus != null and completeStatus != ''">#{completeStatus},</if>
+			<if test="score != null">#{score},</if>
+			<if test="durationMinutes != null">#{durationMinutes},</if>
+			<if test="evaluation != null and evaluation != ''">#{evaluation},</if>
+			<if test="createBy != null and createBy != ''">#{createBy},</if>
+			<if test="remark != null and remark != ''">#{remark},</if>
+			sysdate()
+		</trim>
+	</insert>
+
+	<update id="updateVtTrainingRecord" parameterType="VtTrainingRecord">
+		update vt_training_record
+		<set>
+			<if test="planId != null">plan_id = #{planId},</if>
+			<if test="studentName != null and studentName != ''">student_name = #{studentName},</if>
+			<if test="studentNo != null and studentNo != ''">student_no = #{studentNo},</if>
+			<if test="startTime != null">start_time = #{startTime},</if>
+			<if test="endTime != null">end_time = #{endTime},</if>
+			<if test="completeStatus != null and completeStatus != ''">complete_status = #{completeStatus},</if>
+			<if test="score != null">score = #{score},</if>
+			<if test="durationMinutes != null">duration_minutes = #{durationMinutes},</if>
+			<if test="evaluation != null and evaluation != ''">evaluation = #{evaluation},</if>
+			<if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
+			<if test="remark != null and remark != ''">remark = #{remark},</if>
+			update_time = sysdate()
+		</set>
+		where record_id = #{recordId}
+	</update>
+
+	<delete id="deleteVtTrainingRecordById" parameterType="Long">
+		delete from vt_training_record where record_id = #{recordId}
+	</delete>
+
+	<delete id="deleteVtTrainingRecordByIds" parameterType="Long">
+		delete from vt_training_record where record_id in
+		<foreach collection="array" item="recordId" open="(" separator="," close=")">
+			#{recordId}
+		</foreach>
+	</delete>
+</mapper>

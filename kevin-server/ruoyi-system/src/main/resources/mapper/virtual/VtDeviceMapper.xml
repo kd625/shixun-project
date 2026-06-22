@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.virtualmapper.VtDeviceMapper">
+
+	<resultMap type="VtDevice" id="VtDeviceResult">
+		<id property="deviceId" column="device_id" />
+		<result property="deviceName" column="device_name" />
+		<result property="deviceCode" column="device_code" />
+		<result property="labId" column="lab_id" />
+		<result property="deviceType" column="device_type" />
+		<result property="runStatus" column="run_status" />
+		<result property="onlineStatus" column="online_status" />
+		<result property="lastCheckTime" column="last_check_time" />
+		<result property="createBy" column="create_by" />
+		<result property="createTime" column="create_time" />
+		<result property="updateBy" column="update_by" />
+		<result property="updateTime" column="update_time" />
+		<result property="remark" column="remark" />
+	</resultMap>
+
+	<sql id="selectVtDeviceVo">
+		select device_id, device_name, device_code, lab_id, device_type, run_status, online_status, last_check_time, create_by, create_time, update_by, update_time, remark from vt_device
+	</sql>
+
+	<select id="selectVtDeviceList" parameterType="VtDevice" resultMap="VtDeviceResult">
+		<include refid="selectVtDeviceVo"/>
+		<where>
+			<if test="deviceName != null and deviceName != ''"> and device_name like concat('%', #{deviceName}, '%')</if>
+			<if test="deviceCode != null and deviceCode != ''"> and device_code like concat('%', #{deviceCode}, '%')</if>
+			<if test="deviceType != null and deviceType != ''"> and device_type like concat('%', #{deviceType}, '%')</if>
+			<if test="runStatus != null and runStatus != ''"> and run_status like concat('%', #{runStatus}, '%')</if>
+			<if test="labId != null"> and lab_id = #{labId}</if>
+			<if test="lastCheckTime != null"> and last_check_time = #{lastCheckTime}</if>
+		</where>
+		order by create_time desc
+	</select>
+
+	<select id="selectVtDeviceById" parameterType="Long" resultMap="VtDeviceResult">
+		<include refid="selectVtDeviceVo"/>
+		where device_id = #{deviceId}
+	</select>
+
+	<insert id="insertVtDevice" parameterType="VtDevice" useGeneratedKeys="true" keyProperty="deviceId">
+		insert into vt_device
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="deviceId != null">device_id,</if>
+			<if test="deviceName != null and deviceName != ''">device_name,</if>
+			<if test="deviceCode != null and deviceCode != ''">device_code,</if>
+			<if test="labId != null">lab_id,</if>
+			<if test="deviceType != null and deviceType != ''">device_type,</if>
+			<if test="runStatus != null and runStatus != ''">run_status,</if>
+			<if test="onlineStatus != null and onlineStatus != ''">online_status,</if>
+			<if test="lastCheckTime != null">last_check_time,</if>
+			<if test="createBy != null and createBy != ''">create_by,</if>
+			<if test="remark != null and remark != ''">remark,</if>
+			create_time
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="deviceId != null">#{deviceId},</if>
+			<if test="deviceName != null and deviceName != ''">#{deviceName},</if>
+			<if test="deviceCode != null and deviceCode != ''">#{deviceCode},</if>
+			<if test="labId != null">#{labId},</if>
+			<if test="deviceType != null and deviceType != ''">#{deviceType},</if>
+			<if test="runStatus != null and runStatus != ''">#{runStatus},</if>
+			<if test="onlineStatus != null and onlineStatus != ''">#{onlineStatus},</if>
+			<if test="lastCheckTime != null">#{lastCheckTime},</if>
+			<if test="createBy != null and createBy != ''">#{createBy},</if>
+			<if test="remark != null and remark != ''">#{remark},</if>
+			sysdate()
+		</trim>
+	</insert>
+
+	<update id="updateVtDevice" parameterType="VtDevice">
+		update vt_device
+		<set>
+			<if test="deviceName != null and deviceName != ''">device_name = #{deviceName},</if>
+			<if test="deviceCode != null and deviceCode != ''">device_code = #{deviceCode},</if>
+			<if test="labId != null">lab_id = #{labId},</if>
+			<if test="deviceType != null and deviceType != ''">device_type = #{deviceType},</if>
+			<if test="runStatus != null and runStatus != ''">run_status = #{runStatus},</if>
+			<if test="onlineStatus != null and onlineStatus != ''">online_status = #{onlineStatus},</if>
+			<if test="lastCheckTime != null">last_check_time = #{lastCheckTime},</if>
+			<if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
+			<if test="remark != null and remark != ''">remark = #{remark},</if>
+			update_time = sysdate()
+		</set>
+		where device_id = #{deviceId}
+	</update>
+
+	<delete id="deleteVtDeviceById" parameterType="Long">
+		delete from vt_device where device_id = #{deviceId}
+	</delete>
+
+	<delete id="deleteVtDeviceByIds" parameterType="Long">
+		delete from vt_device where device_id in
+		<foreach collection="array" item="deviceId" open="(" separator="," close=")">
+			#{deviceId}
+		</foreach>
+	</delete>
+</mapper>

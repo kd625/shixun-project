@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.virtualmapper.VtCourseMapper">
+
+	<resultMap type="VtCourse" id="VtCourseResult">
+		<id property="courseId" column="course_id" />
+		<result property="courseName" column="course_name" />
+		<result property="majorDirection" column="major_direction" />
+		<result property="classHours" column="class_hours" />
+		<result property="teacherName" column="teacher_name" />
+		<result property="courseStatus" column="course_status" />
+		<result property="introduction" column="introduction" />
+		<result property="createBy" column="create_by" />
+		<result property="createTime" column="create_time" />
+		<result property="updateBy" column="update_by" />
+		<result property="updateTime" column="update_time" />
+		<result property="remark" column="remark" />
+	</resultMap>
+
+	<sql id="selectVtCourseVo">
+		select course_id, course_name, major_direction, class_hours, teacher_name, course_status, introduction, create_by, create_time, update_by, update_time, remark from vt_course
+	</sql>
+
+	<select id="selectVtCourseList" parameterType="VtCourse" resultMap="VtCourseResult">
+		<include refid="selectVtCourseVo"/>
+		<where>
+			<if test="courseName != null and courseName != ''"> and course_name like concat('%', #{courseName}, '%')</if>
+			<if test="majorDirection != null and majorDirection != ''"> and major_direction like concat('%', #{majorDirection}, '%')</if>
+			<if test="teacherName != null and teacherName != ''"> and teacher_name like concat('%', #{teacherName}, '%')</if>
+			<if test="courseStatus != null and courseStatus != ''"> and course_status like concat('%', #{courseStatus}, '%')</if>
+			<if test="classHours != null"> and class_hours = #{classHours}</if>
+		</where>
+		order by create_time desc
+	</select>
+
+	<select id="selectVtCourseById" parameterType="Long" resultMap="VtCourseResult">
+		<include refid="selectVtCourseVo"/>
+		where course_id = #{courseId}
+	</select>
+
+	<insert id="insertVtCourse" parameterType="VtCourse" useGeneratedKeys="true" keyProperty="courseId">
+		insert into vt_course
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="courseId != null">course_id,</if>
+			<if test="courseName != null and courseName != ''">course_name,</if>
+			<if test="majorDirection != null and majorDirection != ''">major_direction,</if>
+			<if test="classHours != null">class_hours,</if>
+			<if test="teacherName != null and teacherName != ''">teacher_name,</if>
+			<if test="courseStatus != null and courseStatus != ''">course_status,</if>
+			<if test="introduction != null and introduction != ''">introduction,</if>
+			<if test="createBy != null and createBy != ''">create_by,</if>
+			<if test="remark != null and remark != ''">remark,</if>
+			create_time
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="courseId != null">#{courseId},</if>
+			<if test="courseName != null and courseName != ''">#{courseName},</if>
+			<if test="majorDirection != null and majorDirection != ''">#{majorDirection},</if>
+			<if test="classHours != null">#{classHours},</if>
+			<if test="teacherName != null and teacherName != ''">#{teacherName},</if>
+			<if test="courseStatus != null and courseStatus != ''">#{courseStatus},</if>
+			<if test="introduction != null and introduction != ''">#{introduction},</if>
+			<if test="createBy != null and createBy != ''">#{createBy},</if>
+			<if test="remark != null and remark != ''">#{remark},</if>
+			sysdate()
+		</trim>
+	</insert>
+
+	<update id="updateVtCourse" parameterType="VtCourse">
+		update vt_course
+		<set>
+			<if test="courseName != null and courseName != ''">course_name = #{courseName},</if>
+			<if test="majorDirection != null and majorDirection != ''">major_direction = #{majorDirection},</if>
+			<if test="classHours != null">class_hours = #{classHours},</if>
+			<if test="teacherName != null and teacherName != ''">teacher_name = #{teacherName},</if>
+			<if test="courseStatus != null and courseStatus != ''">course_status = #{courseStatus},</if>
+			<if test="introduction != null and introduction != ''">introduction = #{introduction},</if>
+			<if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
+			<if test="remark != null and remark != ''">remark = #{remark},</if>
+			update_time = sysdate()
+		</set>
+		where course_id = #{courseId}
+	</update>
+
+	<delete id="deleteVtCourseById" parameterType="Long">
+		delete from vt_course where course_id = #{courseId}
+	</delete>
+
+	<delete id="deleteVtCourseByIds" parameterType="Long">
+		delete from vt_course where course_id in
+		<foreach collection="array" item="courseId" open="(" separator="," close=")">
+			#{courseId}
+		</foreach>
+	</delete>
+</mapper>
