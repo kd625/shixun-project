@@ -2,26 +2,34 @@
 
 ## Project Structure & Module Organization
 
-This repository contains the backend portion of the Kevin project. Backend code is a multi-module Maven project: `ruoyi-admin` is the Spring Boot entrypoint, `ruoyi-framework` holds web/security configuration, `ruoyi-system` contains business logic and MyBatis mappers, `ruoyi-quartz` contains scheduled jobs, `ruoyi-generator` contains code generation, and `ruoyi-common` contains shared utilities. Backend resources live under each module's `src/main/resources`; main configuration is in `ruoyi-admin/src/main/resources/application.yml` and `application-druid.yml`. SQL bootstrap files are in `sql/`. The Vue 2 frontend now lives in the sibling workspace directory `../kevin-web/`.
+This workspace is split into two top-level projects:
+
+- `kevin-server/`: backend Spring Boot / RuoYi multi-module Maven project.
+- `kevin-web/`: frontend Vue 2 / Element UI project.
+
+Backend modules live under `kevin-server/`: `ruoyi-admin` is the Spring Boot entrypoint, `ruoyi-framework` holds web/security configuration, `ruoyi-system` contains business logic and MyBatis mappers, `ruoyi-quartz` contains jobs, `ruoyi-generator` contains code generation, and `ruoyi-common` contains utilities. SQL bootstrap files live in `kevin-server/sql/`. Frontend source lives in `kevin-web/src/`, with static assets under `kevin-web/public/`.
 
 ## Build, Test, and Development Commands
 
-Run backend commands from this directory.
+Run backend commands from `kevin-server/`.
 
 - `mvn clean package`: builds all Java modules and packages the backend.
 - `mvn test`: runs Maven tests for all modules.
-- `mvn -pl ruoyi-admin spring-boot:run`: starts the backend locally.
-- `cd ../kevin-web && npm install`: installs frontend dependencies.
-- `cd ../kevin-web && npm run dev`: starts the Vue CLI dev server; API calls proxy to `http://localhost:8080`.
-- `cd ../kevin-web && npm run build:prod`: creates the production frontend bundle in `dist/`.
+- `mvn -pl ruoyi-admin spring-boot:run`: starts the backend entrypoint locally.
+
+Run frontend commands from `kevin-web/`.
+
+- `npm install`: installs frontend dependencies.
+- `npm run dev`: starts the Vue CLI dev server; it proxies API calls to `http://localhost:8080`.
+- `npm run build:prod`: creates the production frontend bundle in `dist/`.
 
 ## Coding Style & Naming Conventions
 
-Use Java 8 and keep package names under `com.ruoyi`. Follow the existing Java brace style where class and method braces open on the next line, and use suffixes such as `Controller`, `Service`, `ServiceImpl`, `Mapper`, and `Domain`. Keep MyBatis XML names aligned with Java mapper interfaces. Frontend code uses Vue 2, Vuex, Element UI, `@` alias imports, single quotes, and two-space indentation.
+Use Java 17 and keep backend package names under `com.ruoyi`. Follow the existing Java brace style where class and method braces open on the next line, and use suffixes such as `Controller`, `Service`, `ServiceImpl`, `Mapper`, and `Domain`. Keep MyBatis XML names aligned with Java mapper interfaces. Frontend code uses Vue 2, Vuex, Element UI, `@` alias imports, single quotes, and two-space indentation.
 
 ## Testing Guidelines
 
-There are currently no checked-in `src/test` files. Add Java tests under the matching module's `src/test/java` package when changing backend behavior, and name them after the class or feature under test, for example `SysUserServiceTest`. Run `mvn test` before submitting backend changes. For frontend changes, at minimum run `npm run build:prod`.
+There are currently no checked-in `src/test` files. Add Java tests under the matching backend module's `src/test/java` package when changing behavior, and name them after the class or feature under test, for example `SysUserServiceTest`. Run `mvn test` before backend changes. For frontend changes, at minimum run `npm run build:prod`.
 
 ## Commit & Pull Request Guidelines
 
@@ -29,4 +37,8 @@ Recent history uses short, imperative Chinese summaries, for example `优化代�
 
 ## Security & Configuration Tips
 
-Do not commit real database passwords, Redis credentials, JWT secrets, or environment-specific upload paths. Keep local overrides outside tracked files, and document required SQL migrations from `sql/` when schema changes are needed.
+Do not commit real database passwords, Redis credentials, JWT secrets, or environment-specific upload paths. Keep local overrides outside tracked files, and document required SQL migrations from `kevin-server/sql/` when schema changes are needed.
+
+## Agent-Specific Instructions
+
+必须使用中文回复用户，除非用户明确要求使用其他语言。
