@@ -119,6 +119,56 @@ public class VtAiServiceImplTest
         Assertions.assertTrue(emitter.completed);
     }
 
+    @Test
+    public void blankSceneShouldReturnErrorEventWithoutCallingClient()
+    {
+        CapturingClient client = new CapturingClient("不会被调用");
+        CapturingSseEmitter emitter = new CapturingSseEmitter();
+        VtAiServiceImpl service = new TestableVtAiServiceImpl(client, emitter);
+        VtAiIntroRequest request = new VtAiIntroRequest();
+        request.setResourceName("新能源汽车电池虚拟仿真资源");
+
+        service.generateIntroStream(request);
+
+        assertErrorWithoutCallingClient(client, emitter, "生成场景不能为空");
+    }
+
+    @Test
+    public void unsupportedSceneShouldReturnErrorEventWithoutCallingClient()
+    {
+        CapturingClient client = new CapturingClient("不会被调用");
+        CapturingSseEmitter emitter = new CapturingSseEmitter();
+        VtAiServiceImpl service = new TestableVtAiServiceImpl(client, emitter);
+        VtAiIntroRequest request = new VtAiIntroRequest();
+        request.setScene("course");
+        request.setResourceName("新能源汽车电池虚拟仿真资源");
+
+        service.generateIntroStream(request);
+
+        assertErrorWithoutCallingClient(client, emitter, "生成场景不支持");
+    }
+
+    @Test
+    public void blankExperimentNameShouldReturnErrorEventWithoutCallingClient()
+    {
+        CapturingClient client = new CapturingClient("不会被调用");
+        CapturingSseEmitter emitter = new CapturingSseEmitter();
+        VtAiServiceImpl service = new TestableVtAiServiceImpl(client, emitter);
+        VtAiIntroRequest request = new VtAiIntroRequest();
+        request.setScene("experiment");
+
+        service.generateIntroStream(request);
+
+        assertErrorWithoutCallingClient(client, emitter, "实验名称不能为空");
+    }
+
+    private void assertErrorWithoutCallingClient(CapturingClient client, CapturingSseEmitter emitter, String message)
+    {
+        Assertions.assertEquals(0, client.callCount);
+        Assertions.assertTrue(emitter.containsEvent("error", message));
+        Assertions.assertTrue(emitter.completed);
+    }
+
     private static class CapturingClient implements IDeepSeekStreamClient
     {
         private final String content;

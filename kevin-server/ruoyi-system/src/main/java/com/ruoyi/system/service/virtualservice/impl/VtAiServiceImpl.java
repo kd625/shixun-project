@@ -81,11 +81,19 @@ public class VtAiServiceImpl implements IVtAiService
         {
             throw new IllegalArgumentException("请求参数不能为空");
         }
+        if (StringUtils.isBlank(request.getScene()))
+        {
+            throw new IllegalArgumentException("生成场景不能为空");
+        }
+        if (StringUtils.equals("resource", request.getScene()))
+        {
+            return buildResourcePrompt(request);
+        }
         if (StringUtils.equals("experiment", request.getScene()))
         {
             return buildExperimentPrompt(request);
         }
-        return buildResourcePrompt(request);
+        throw new IllegalArgumentException("生成场景不支持");
     }
 
     private String buildResourcePrompt(VtAiIntroRequest request)
