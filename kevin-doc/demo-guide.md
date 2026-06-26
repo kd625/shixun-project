@@ -10,6 +10,14 @@
 6. 在 `kevin-server/` 执行 `mvn -pl ruoyi-admin spring-boot:run` 启动后端。
 7. 在 `kevin-web/` 执行 `npm run dev` 启动前端。
 
+本地 Docker MySQL 建议用 UTF-8 客户端字符集导入，避免中文初始化数据被写成 `è‹¥ä¾` 这类乱码：
+
+```bash
+docker exec shixun-mysql mysql --default-character-set=utf8mb4 -uroot -ppassword -e "CREATE DATABASE IF NOT EXISTS \`ry-vue\` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+docker exec -i shixun-mysql mysql --default-character-set=utf8mb4 -uroot -ppassword ry-vue < kevin-server/sql/ry_20260417.sql
+docker exec -i shixun-mysql mysql --default-character-set=utf8mb4 -uroot -ppassword ry-vue < kevin-server/sql/quartz.sql
+```
+
 ## 演示路径
 
 1. 登录系统，查看首页平台指标。
