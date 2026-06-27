@@ -73,7 +73,12 @@
         </el-form-item>
         <el-form-item label="浏览量" prop="viewCount"><el-input-number v-model="form.viewCount" controls-position="right" :min="0" /></el-form-item>
         <el-form-item label="收藏量" prop="collectCount"><el-input-number v-model="form.collectCount" controls-position="right" :min="0" /></el-form-item>
-        <el-form-item label="简介" prop="introduction"><el-input v-model="form.introduction" type="textarea" :rows="3" placeholder="请输入简介" /></el-form-item>
+        <el-form-item label="简介" prop="introduction">
+          <el-input v-model="form.introduction" type="textarea" :rows="4" placeholder="请输入简介" />
+          <el-button class="ai-generate-btn" type="primary" plain size="mini" icon="el-icon-magic-stick" :loading="aiGenerating" @click="handleGenerateIntro">
+            {{ aiGenerating ? '生成中' : 'AI生成' }}
+          </el-button>
+        </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="submitForm">确 定</el-button>
@@ -85,7 +90,7 @@
 
 <script>
 import { listResource, getResource, delResource, addResource, updateResource } from '@/api/virtual/resource'
-
+import { streamGenerateIntro } from '@/api/virtual/ai'
 
 export default {
   name: 'VtResource',
@@ -101,6 +106,8 @@ export default {
       resourceList: [],
       title: '',
       open: false,
+      aiGenerating: false,
+      aiAbortController: null,
       queryParams: { pageNum: 1, pageSize: 10, resourceName: undefined, resourceType: undefined, majorName: undefined, shareStatus: undefined },
       form: {},
       rules: {
@@ -121,10 +128,12 @@ export default {
       })
     },
     cancel() {
+      this.stopAiGenerate()
       this.open = false
       this.reset()
     },
     reset() {
+      this.stopAiGenerate()
       this.form = { resourceId: undefined, resourceName: undefined, resourceType: '0', majorName: undefined, courseName: undefined, coverUrl: undefined, fileUrl: undefined, shareStatus: '0', viewCount: 0, collectCount: 0, introduction: undefined }
       this.resetForm('form')
     },
@@ -140,6 +149,46 @@ export default {
       this.ids = selection.map(item => item.resourceId)
       this.single = selection.length !== 1
       this.multiple = !selection.length
+    },
+    stopAiGenerate() {
+      if (this.aiAbortController) {
+        this.aiAbortController.abort()
+        this.aiAbortController = null
+      }
+      this.aiGenerating = false
+    },
+    handleGenerateIntro() {
+      if (!this.form.resourceName) {
+        this.$modal.msgWarning('请先填写资源名称')
+        return
+      }
+      this.stopAiGenerate()
+      this.form.introduction = ''
+      this.aiGenerating = true
+      this.aiAbortController = streamGenerateIntro({
+        scene: 'resource',
+        resourceName: this.form.resourceName,
+        resourceType: this.getResourceTypeLabel(this.form.resourceType),
+        majorName: this.form.majorName,
+        courseName: this.form.courseName
+      }, {
+        message: content => {
+          this.form.introduction = (this.form.introduction || '') + content
+        },
+        done: () => {
+          this.aiGenerating = false
+          this.aiAbortController = null
+        },
+        error: message => {
+          this.aiGenerating = false
+          this.aiAbortController = null
+          this.$modal.msgError(message)
+        }
+      })
+    },
+    getResourceTypeLabel(value) {
+      const item = this.dict.type.vt_resource_type.find(dict => dict.value === value)
+      return item ? item.label : value
     },
     handleAdd() {
       this.reset()
@@ -162,6 +211,7 @@ export default {
           const request = isUpdate ? updateResource(this.form) : addResource(this.form)
           request.then(() => {
             this.$modal.msgSuccess(isUpdate ? '修改成功' : '新增成功')
+            this.stopAiGenerate()
             this.open = false
             this.getList()
           })
@@ -183,3 +233,9 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.ai-generate-btn {
+  margin-top: 8px;
+}
+</style>
