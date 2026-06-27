@@ -21,5 +21,6 @@ public class VirtualControllerSmokeTest
         Assertions.assertNotNull(VtTrainingRecordController.class);
         Assertions.assertNotNull(VtDashboardController.class);
         Assertions.assertNotNull(VtPortalController.class);
+        Assertions.assertNotNull(VtAiController.class);
     }
 }

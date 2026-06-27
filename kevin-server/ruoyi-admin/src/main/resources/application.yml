@@ -119,6 +119,13 @@ swagger:
   # 请求前缀
   pathMapping: /dev-api
 
+# DeepSeek AI配置
+deepseek:
+  baseUrl: https://api.deepseek.com
+  model: deepseek-v4-flash
+  apiKey: ${DEEPSEEK_API_KEY:}
+  timeoutSeconds: 60
+
 # 防盗链配置
 referer:
   # 防盗链开关
