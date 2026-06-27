@@ -74,7 +74,8 @@ export function streamGenerateIntro(payload, handlers) {
           finish()
           return
         }
-        buffer += decoder.decode(result.value, { stream: true }).replace(/\r\n/g, '\n')
+        buffer += decoder.decode(result.value, { stream: true })
+        buffer = buffer.replace(/\r\n/g, '\n')
         const blocks = buffer.split('\n\n')
         buffer = blocks.pop()
         for (const block of blocks) {

@@ -82,7 +82,7 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitForm">确 定</el-button>
+        <el-button type="primary" :loading="aiGenerating" :disabled="aiGenerating" @click="submitForm">确 定</el-button>
         <el-button @click="cancel">取 消</el-button>
       </div>
     </el-dialog>
@@ -233,6 +233,10 @@ export default {
       })
     },
     submitForm() {
+      if (this.aiGenerating) {
+        this.$modal.msgWarning('AI简介生成中，请稍后再提交')
+        return
+      }
       this.$refs.form.validate(valid => {
         if (valid) {
           const isUpdate = this.form.experimentId !== undefined
