@@ -5,13 +5,11 @@ import com.ruoyi.system.service.virtualservice.IDeepSeekStreamClient;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.task.SyncTaskExecutor;
-import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyEmitter;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Consumer;
 
 public class VtAiServiceImplTest
@@ -37,8 +35,8 @@ public class VtAiServiceImplTest
         Assertions.assertTrue(client.prompt.contains("新能源汽车技术"));
         Assertions.assertTrue(client.prompt.contains("动力电池检修"));
         Assertions.assertTrue(client.prompt.contains("100到180字"));
-        Assertions.assertTrue(emitter.containsEvent("message", "资源简介片段"));
-        Assertions.assertTrue(emitter.containsEvent("done", ""));
+        Assertions.assertTrue(((TestableVtAiServiceImpl) service).containsEvent("message", "资源简介片段"));
+        Assertions.assertTrue(((TestableVtAiServiceImpl) service).containsEvent("done", ""));
         Assertions.assertTrue(emitter.completed);
     }
 
@@ -63,8 +61,8 @@ public class VtAiServiceImplTest
         Assertions.assertTrue(client.prompt.contains("电池包三维拆装资源"));
         Assertions.assertTrue(client.prompt.contains("中等"));
         Assertions.assertTrue(client.prompt.contains("45分钟"));
-        Assertions.assertTrue(emitter.containsEvent("message", "实验简介片段"));
-        Assertions.assertTrue(emitter.containsEvent("done", ""));
+        Assertions.assertTrue(((TestableVtAiServiceImpl) service).containsEvent("message", "实验简介片段"));
+        Assertions.assertTrue(((TestableVtAiServiceImpl) service).containsEvent("done", ""));
     }
 
     @Test
@@ -79,7 +77,7 @@ public class VtAiServiceImplTest
         service.generateIntroStream(request);
 
         Assertions.assertEquals(0, client.callCount);
-        Assertions.assertTrue(emitter.containsEvent("error", "资源名称不能为空"));
+        Assertions.assertTrue(((TestableVtAiServiceImpl) service).containsEvent("error", "资源名称不能为空"));
         Assertions.assertTrue(emitter.completed);
     }
 
@@ -97,7 +95,7 @@ public class VtAiServiceImplTest
         service.generateIntroStream(request);
 
         Assertions.assertEquals(1, client.callCount);
-        Assertions.assertTrue(emitter.containsEvent("error", "DeepSeek未配置"));
+        Assertions.assertTrue(((TestableVtAiServiceImpl) service).containsEvent("error", "DeepSeek未配置"));
         Assertions.assertTrue(emitter.completed);
     }
 
@@ -115,8 +113,27 @@ public class VtAiServiceImplTest
         service.generateIntroStream(request);
 
         Assertions.assertEquals(1, client.callCount);
-        Assertions.assertTrue(emitter.containsEvent("error", "AI生成失败，请稍后重试"));
+        Assertions.assertTrue(((TestableVtAiServiceImpl) service).containsEvent("error", "AI生成失败，请稍后重试"));
         Assertions.assertTrue(emitter.completed);
+    }
+
+    @Test
+    public void sendFailureShouldCompleteWithErrorAndStopBeforeDone()
+    {
+        CapturingClient client = new CapturingClient("资源简介片段");
+        CapturingSseEmitter emitter = new CapturingSseEmitter();
+        emitter.failOnSend = true;
+        TestableVtAiServiceImpl service = new TestableVtAiServiceImpl(client, emitter);
+        VtAiIntroRequest request = new VtAiIntroRequest();
+        request.setScene("resource");
+        request.setResourceName("新能源汽车电池虚拟仿真资源");
+
+        service.generateIntroStream(request);
+
+        Assertions.assertEquals(1, client.callCount);
+        Assertions.assertTrue(emitter.completedWithError);
+        Assertions.assertFalse(emitter.completed);
+        Assertions.assertFalse(service.containsEvent("done", ""));
     }
 
     @Test
@@ -165,8 +182,13 @@ public class VtAiServiceImplTest
     private void assertErrorWithoutCallingClient(CapturingClient client, CapturingSseEmitter emitter, String message)
     {
         Assertions.assertEquals(0, client.callCount);
-        Assertions.assertTrue(emitter.containsEvent("error", message));
+        Assertions.assertTrue(((TestableVtAiServiceImpl) serviceForEmitter(emitter)).containsEvent("error", message));
         Assertions.assertTrue(emitter.completed);
+    }
+
+    private VtAiServiceImpl serviceForEmitter(CapturingSseEmitter emitter)
+    {
+        return emitter.service;
     }
 
     private static class CapturingClient implements IDeepSeekStreamClient
@@ -199,11 +221,13 @@ public class VtAiServiceImplTest
     private static class TestableVtAiServiceImpl extends VtAiServiceImpl
     {
         private final CapturingSseEmitter emitter;
+        private final List<RecordedEvent> events = new ArrayList<RecordedEvent>();
 
         TestableVtAiServiceImpl(IDeepSeekStreamClient client, CapturingSseEmitter emitter)
         {
             super(client, new SyncTaskExecutor());
             this.emitter = emitter;
+            this.emitter.service = this;
         }
 
         @Override
@@ -211,12 +235,33 @@ public class VtAiServiceImplTest
         {
             return emitter;
         }
+
+        @Override
+        protected void sendEvent(SseEmitter emitter, String eventName, String data)
+        {
+            events.add(new RecordedEvent(eventName, data));
+            super.sendEvent(emitter, eventName, data);
+        }
+
+        private boolean containsEvent(String eventName, String data)
+        {
+            for (RecordedEvent event : events)
+            {
+                if (eventName.equals(event.eventName) && data.equals(event.data))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 
     private static class CapturingSseEmitter extends SseEmitter
     {
-        private final List<String> events = new ArrayList<String>();
+        private TestableVtAiServiceImpl service;
         private boolean completed;
+        private boolean completedWithError;
+        private boolean failOnSend;
 
         CapturingSseEmitter()
         {
@@ -226,13 +271,10 @@ public class VtAiServiceImplTest
         @Override
         public void send(SseEventBuilder builder) throws IOException
         {
-            Set<ResponseBodyEmitter.DataWithMediaType> dataSet = builder.build();
-            StringBuilder event = new StringBuilder();
-            for (ResponseBodyEmitter.DataWithMediaType data : dataSet)
+            if (failOnSend)
             {
-                event.append(data.getData());
+                throw new IOException("SSE发送失败");
             }
-            events.add(event.toString());
         }
 
         @Override
@@ -244,19 +286,19 @@ public class VtAiServiceImplTest
         @Override
         public synchronized void completeWithError(Throwable ex)
         {
-            this.completed = true;
+            this.completedWithError = true;
         }
+    }
 
-        private boolean containsEvent(String eventName, String content)
+    private static class RecordedEvent
+    {
+        private final String eventName;
+        private final String data;
+
+        RecordedEvent(String eventName, String data)
         {
-            for (String event : events)
-            {
-                if (event.contains("event:" + eventName) && event.contains(content))
-                {
-                    return true;
-                }
-            }
-            return false;
+            this.eventName = eventName;
+            this.data = data;
         }
     }
 }

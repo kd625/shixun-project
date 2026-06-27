@@ -48,22 +48,23 @@ public class VtAiServiceImpl implements IVtAiService
                         }
                     });
                     sendEvent(emitter, "done", "");
-                    emitter.complete();
+                    safeComplete(emitter);
+                }
+                catch (SseSendException e)
+                {
+                    safeCompleteWithError(emitter, e);
                 }
                 catch (IllegalArgumentException e)
                 {
-                    sendEvent(emitter, "error", e.getMessage());
-                    emitter.complete();
+                    sendErrorAndComplete(emitter, e.getMessage());
                 }
                 catch (IllegalStateException e)
                 {
-                    sendEvent(emitter, "error", e.getMessage());
-                    emitter.complete();
+                    sendErrorAndComplete(emitter, e.getMessage());
                 }
                 catch (Exception e)
                 {
-                    sendEvent(emitter, "error", "AI生成失败，请稍后重试");
-                    emitter.complete();
+                    sendErrorAndComplete(emitter, "AI生成失败，请稍后重试");
                 }
             }
         });
@@ -149,7 +150,7 @@ public class VtAiServiceImpl implements IVtAiService
         return chunk.replace("```", "").replace("#", "");
     }
 
-    private void sendEvent(SseEmitter emitter, String eventName, String data)
+    protected void sendEvent(SseEmitter emitter, String eventName, String data)
     {
         try
         {
@@ -157,7 +158,56 @@ public class VtAiServiceImpl implements IVtAiService
         }
         catch (IOException e)
         {
+            throw new SseSendException(e);
+        }
+        catch (IllegalStateException e)
+        {
+            throw new SseSendException(e);
+        }
+    }
+
+    private void sendErrorAndComplete(SseEmitter emitter, String message)
+    {
+        try
+        {
+            sendEvent(emitter, "error", message);
+            safeComplete(emitter);
+        }
+        catch (SseSendException e)
+        {
+            safeCompleteWithError(emitter, e);
+        }
+    }
+
+    private void safeComplete(SseEmitter emitter)
+    {
+        try
+        {
+            emitter.complete();
+        }
+        catch (IllegalStateException ignored)
+        {
+        }
+    }
+
+    private void safeCompleteWithError(SseEmitter emitter, RuntimeException e)
+    {
+        try
+        {
             emitter.completeWithError(e);
+        }
+        catch (IllegalStateException ignored)
+        {
+        }
+    }
+
+    private static class SseSendException extends RuntimeException
+    {
+        private static final long serialVersionUID = 1L;
+
+        SseSendException(Throwable cause)
+        {
+            super(cause);
         }
     }
 }
