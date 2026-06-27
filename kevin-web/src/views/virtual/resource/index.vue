@@ -54,7 +54,7 @@
 
     <pagination v-show="total>0" :total="total" :page.sync="queryParams.pageNum" :limit.sync="queryParams.pageSize" @pagination="getList" />
 
-    <el-dialog :title="title" :visible.sync="open" width="680px" append-to-body>
+    <el-dialog :title="title" :visible.sync="open" width="680px" append-to-body :before-close="handleDialogClose">
       <el-form ref="form" :model="form" :rules="rules" label-width="110px">
         <el-form-item label="资源名称" prop="resourceName"><el-input v-model="form.resourceName" placeholder="请输入资源名称" /></el-form-item>
         <el-form-item label="资源类型" prop="resourceType">
@@ -128,12 +128,14 @@ export default {
       })
     },
     cancel() {
-      this.stopAiGenerate()
-      this.open = false
-      this.reset()
+      this.handleDialogClose(() => {
+        this.open = false
+      })
     },
-    reset() {
-      this.stopAiGenerate()
+    reset(options = {}) {
+      if (options.stopAi !== false) {
+        this.stopAiGenerate()
+      }
       this.form = { resourceId: undefined, resourceName: undefined, resourceType: '0', majorName: undefined, courseName: undefined, coverUrl: undefined, fileUrl: undefined, shareStatus: '0', viewCount: 0, collectCount: 0, introduction: undefined }
       this.resetForm('form')
     },
@@ -149,6 +151,11 @@ export default {
       this.ids = selection.map(item => item.resourceId)
       this.single = selection.length !== 1
       this.multiple = !selection.length
+    },
+    handleDialogClose(done) {
+      this.stopAiGenerate()
+      done()
+      this.reset({ stopAi: false })
     },
     stopAiGenerate() {
       if (this.aiAbortController) {
