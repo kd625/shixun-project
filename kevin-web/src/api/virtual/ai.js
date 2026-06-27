@@ -2,13 +2,19 @@ import { getToken } from '@/utils/auth'
 
 function parseSseBlock(block) {
   const event = { event: 'message', data: '' }
+  const dataLines = []
   block.split('\n').forEach(line => {
     if (line.startsWith('event:')) {
       event.event = line.slice(6).trim()
     } else if (line.startsWith('data:')) {
-      event.data += line.slice(5).trim()
+      let data = line.slice(5)
+      if (data.startsWith(' ')) {
+        data = data.slice(1)
+      }
+      dataLines.push(data)
     }
   })
+  event.data = dataLines.join('\n')
   return event
 }
 
@@ -61,28 +67,34 @@ export function streamGenerateIntro(payload, handlers) {
     const decoder = new TextDecoder('utf-8')
     let buffer = ''
 
-    while (true) {
-      const result = await reader.read()
-      if (result.done) {
-        finish()
-        return
-      }
-      buffer += decoder.decode(result.value, { stream: true }).replace(/\r\n/g, '\n')
-      const blocks = buffer.split('\n\n')
-      buffer = blocks.pop()
-      blocks.forEach(block => {
-        if (!block.trim()) {
+    try {
+      while (!finished) {
+        const result = await reader.read()
+        if (result.done) {
+          finish()
           return
         }
-        const event = parseSseBlock(block)
-        if (event.event === 'error') {
-          fail(event.data || 'AI生成失败，请稍后重试')
-        } else if (event.event === 'done') {
-          finish()
-        } else if (!finished && handlers && handlers.message) {
-          handlers.message(event.data)
+        buffer += decoder.decode(result.value, { stream: true }).replace(/\r\n/g, '\n')
+        const blocks = buffer.split('\n\n')
+        buffer = blocks.pop()
+        for (const block of blocks) {
+          if (!block.trim()) {
+            continue
+          }
+          const event = parseSseBlock(block)
+          if (event.event === 'error') {
+            fail(event.data || 'AI生成失败，请稍后重试')
+            return
+          } else if (event.event === 'done') {
+            finish()
+            return
+          } else if (!finished && handlers && handlers.message) {
+            handlers.message(event.data)
+          }
         }
-      })
+      }
+    } finally {
+      reader.releaseLock()
     }
   }
 
