@@ -54,7 +54,7 @@
 
     <pagination v-show="total>0" :total="total" :page.sync="queryParams.pageNum" :limit.sync="queryParams.pageSize" @pagination="getList" />
 
-    <el-dialog :title="title" :visible.sync="open" width="680px" append-to-body :before-close="handleDialogClose">
+    <el-dialog :title="title" :visible.sync="open" width="680px" append-to-body :before-close="handleDialogClose" @closed="handleDialogClosed">
       <el-form ref="form" :model="form" :rules="rules" label-width="110px">
         <el-form-item label="资源名称" prop="resourceName"><el-input v-model="form.resourceName" placeholder="请输入资源名称" /></el-form-item>
         <el-form-item label="资源类型" prop="resourceType">
@@ -118,6 +118,9 @@ export default {
   created() {
     this.getList()
   },
+  beforeDestroy() {
+    this.stopAiGenerate()
+  },
   methods: {
     getList() {
       this.loading = true
@@ -155,6 +158,8 @@ export default {
     handleDialogClose(done) {
       this.stopAiGenerate()
       done()
+    },
+    handleDialogClosed() {
       this.reset({ stopAi: false })
     },
     stopAiGenerate() {
