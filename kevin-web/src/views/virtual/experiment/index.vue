@@ -50,7 +50,7 @@
 
     <pagination v-show="total>0" :total="total" :page.sync="queryParams.pageNum" :limit.sync="queryParams.pageSize" @pagination="getList" />
 
-    <el-dialog :title="title" :visible.sync="open" width="680px" append-to-body>
+    <el-dialog :title="title" :visible.sync="open" width="680px" append-to-body :before-close="handleDialogClose" @closed="handleDialogClosed">
       <el-form ref="form" :model="form" :rules="rules" label-width="110px">
         <el-form-item label="实验名称" prop="experimentName"><el-input v-model="form.experimentName" placeholder="请输入实验名称" /></el-form-item>
         <el-form-item label="关联课程" prop="courseId">
@@ -74,7 +74,12 @@
             <el-radio v-for="dict in dict.type.vt_open_status" :key="dict.value" :label="dict.value">{{ dict.label }}</el-radio>
           </el-radio-group>
         </el-form-item>
-        <el-form-item label="实验简介" prop="introduction"><el-input v-model="form.introduction" type="textarea" :rows="3" placeholder="请输入实验简介" /></el-form-item>
+        <el-form-item label="实验简介" prop="introduction">
+          <el-input v-model="form.introduction" type="textarea" :rows="4" placeholder="请输入实验简介" />
+          <el-button class="ai-generate-btn" type="primary" plain size="mini" icon="el-icon-magic-stick" :loading="aiGenerating" @click="handleGenerateIntro">
+            {{ aiGenerating ? '生成中' : 'AI生成' }}
+          </el-button>
+        </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="submitForm">确 定</el-button>
@@ -88,6 +93,7 @@
 import { listExperiment, getExperiment, delExperiment, addExperiment, updateExperiment } from '@/api/virtual/experiment'
 import { optionselectCourse } from '@/api/virtual/course'
 import { optionselectResource } from '@/api/virtual/resource'
+import { streamGenerateIntro } from '@/api/virtual/ai'
 
 export default {
   name: 'VtExperiment',
@@ -105,6 +111,8 @@ export default {
       resourceOptions: [],
       title: '',
       open: false,
+      aiGenerating: false,
+      aiAbortController: null,
       queryParams: { pageNum: 1, pageSize: 10, experimentName: undefined, difficulty: undefined, openStatus: undefined },
       form: {},
       rules: {
@@ -117,6 +125,9 @@ export default {
     optionselectCourse().then(response => { this.courseOptions = response.data || [] })
     optionselectResource().then(response => { this.resourceOptions = response.data || [] })
   },
+  beforeDestroy() {
+    this.stopAiGenerate()
+  },
   methods: {
     getList() {
       this.loading = true
@@ -127,10 +138,14 @@ export default {
       })
     },
     cancel() {
-      this.open = false
-      this.reset()
+      this.handleDialogClose(() => {
+        this.open = false
+      })
     },
-    reset() {
+    reset(options = {}) {
+      if (options.stopAi !== false) {
+        this.stopAiGenerate()
+      }
       this.form = { experimentId: undefined, experimentName: undefined, courseId: undefined, resourceId: undefined, difficulty: '1', durationMinutes: 45, openStatus: '0', introduction: undefined }
       this.resetForm('form')
     },
@@ -146,6 +161,62 @@ export default {
       this.ids = selection.map(item => item.experimentId)
       this.single = selection.length !== 1
       this.multiple = !selection.length
+    },
+    handleDialogClose(done) {
+      this.stopAiGenerate()
+      done()
+    },
+    handleDialogClosed() {
+      this.reset({ stopAi: false })
+    },
+    stopAiGenerate() {
+      if (this.aiAbortController) {
+        this.aiAbortController.abort()
+        this.aiAbortController = null
+      }
+      this.aiGenerating = false
+    },
+    handleGenerateIntro() {
+      if (!this.form.experimentName) {
+        this.$modal.msgWarning('请先填写实验名称')
+        return
+      }
+      this.stopAiGenerate()
+      this.form.introduction = ''
+      this.aiGenerating = true
+      this.aiAbortController = streamGenerateIntro({
+        scene: 'experiment',
+        experimentName: this.form.experimentName,
+        courseName: this.getCourseName(this.form.courseId),
+        resourceTitle: this.getResourceName(this.form.resourceId),
+        difficulty: this.getDifficultyLabel(this.form.difficulty),
+        durationMinutes: this.form.durationMinutes
+      }, {
+        message: content => {
+          this.form.introduction = (this.form.introduction || '') + content
+        },
+        done: () => {
+          this.aiGenerating = false
+          this.aiAbortController = null
+        },
+        error: message => {
+          this.aiGenerating = false
+          this.aiAbortController = null
+          this.$modal.msgError(message)
+        }
+      })
+    },
+    getCourseName(courseId) {
+      const item = this.courseOptions.find(course => course.courseId === courseId)
+      return item ? item.courseName : ''
+    },
+    getResourceName(resourceId) {
+      const item = this.resourceOptions.find(resource => resource.resourceId === resourceId)
+      return item ? item.resourceName : ''
+    },
+    getDifficultyLabel(value) {
+      const item = this.dict.type.vt_difficulty.find(dict => dict.value === value)
+      return item ? item.label : value
     },
     handleAdd() {
       this.reset()
@@ -168,6 +239,7 @@ export default {
           const request = isUpdate ? updateExperiment(this.form) : addExperiment(this.form)
           request.then(() => {
             this.$modal.msgSuccess(isUpdate ? '修改成功' : '新增成功')
+            this.stopAiGenerate()
             this.open = false
             this.getList()
           })
@@ -189,3 +261,9 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.ai-generate-btn {
+  margin-top: 8px;
+}
+</style>
